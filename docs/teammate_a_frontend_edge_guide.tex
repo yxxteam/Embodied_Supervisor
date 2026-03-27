@@ -1,0 +1,160 @@
+\documentclass[11pt,a4paper]{ctexart}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  pdftitle={队员A使用说明（前端与边缘端）}
+}
+\setlist[itemize]{leftmargin=2em}
+\setlist[enumerate]{leftmargin=2.2em}
+
+\title{队员A使用说明\\前端与边缘端方向}
+\author{Embodied Supervisor 项目组}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{你的职责边界}
+
+你负责两个仓库：
+
+\begin{itemize}
+  \item \texttt{frontend-web-app}
+  \item \texttt{edge-client-sdk}
+\end{itemize}
+
+你的核心任务不是“把所有能看到的前端代码都写掉”，而是负责项目的体验层与端侧能力层，包括：
+
+\begin{itemize}
+  \item Web 页面、组件、路由和状态管理。
+  \item 设备侧或客户端侧的基础能力封装。
+  \item 本地缓存、离线同步和通信协议的前端消费侧实现。
+  \item 根据共享契约完成前后端联调。
+\end{itemize}
+
+你\textbf{不应}直接承担以下内容：
+
+\begin{itemize}
+  \item 在前端仓库中自定义一套后端字段格式。
+  \item 在页面逻辑中直接处理数据库访问。
+  \item 越过 \texttt{shared-models-and-apis} 私自修改接口协议。
+\end{itemize}
+
+\section{你需要重点关注的仓库}
+
+\subsection{\texttt{frontend-web-app}}
+
+建议放入：
+
+\begin{itemize}
+  \item 页面与组件。
+  \item 路由与状态管理。
+  \item 请求封装与响应渲染逻辑。
+  \item 前端测试与页面说明文档。
+\end{itemize}
+
+\subsection{\texttt{edge-client-sdk}}
+
+建议放入：
+
+\begin{itemize}
+  \item 设备接入、传感器数据采集或端侧接口封装。
+  \item 本地存储与缓存。
+  \item 离线同步逻辑。
+  \item 与云端服务通信的底层封装。
+\end{itemize}
+
+\section{开始开发前的检查清单}
+
+每次开始新需求前，按下面顺序检查：
+
+\begin{enumerate}
+  \item 查看根仓库 README，确认当前阶段目标和角色分工。
+  \item 打开 \texttt{shared-models-and-apis}，确认字段、DTO、接口定义是否已经稳定。
+  \item 如果契约不完整，先提 issue 或 PR，而不是在前端仓库里先写死字段。
+  \item 拉取最新 \texttt{main}，再创建短分支开发。
+\end{enumerate}
+
+\section{日常开发流程}
+
+\subsection{分支创建}
+
+\begin{verbatim}
+git pull --rebase origin main
+git checkout -b feature/<topic>
+\end{verbatim}
+
+如果你是在试一个不确定方案，而不是正式实现，分支改用：
+
+\begin{verbatim}
+git checkout -b experiment/<topic>
+\end{verbatim}
+
+\subsection{提交要求}
+
+\begin{itemize}
+  \item 小步提交，不要一次性堆很大一坨 AI 生成代码。
+  \item 提交信息尽量使用 \texttt{feat}、\texttt{fix}、\texttt{refactor}、\texttt{docs} 等前缀。
+  \item 页面能跑不代表可以合并，仍要经过契约核对和队友审查。
+\end{itemize}
+
+\section{与你最相关的协作规则}
+
+\subsection{和后端同学协作}
+
+\begin{itemize}
+  \item 所有请求和响应格式，以 \texttt{shared-models-and-apis} 为准。
+  \item 字段改动先走契约仓库，再改页面渲染和调用逻辑。
+  \item 如果后端接口返回与契约不一致，优先提 issue，不要直接在前端写兼容脏逻辑。
+\end{itemize}
+
+\subsection{和项目负责人协作}
+
+\begin{itemize}
+  \item 新页面或端侧能力涉及新字段时，先让负责人确认契约影响范围。
+  \item 需要发阶段版时，等负责人统一打标签，不要自行在临时分支上打发布标签。
+\end{itemize}
+
+\section{你的阶段性交付}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.18\textwidth} >{\raggedright\arraybackslash}p{0.74\textwidth}}
+\textbf{阶段} & \textbf{你要交付的内容} \\
+Phase 1 & 前端目录和端侧目录初始化完成，基础说明文档齐备。 \\
+Phase 2 & 根据共享契约完成页面骨架、请求封装和端侧通信入口。 \\
+Phase 3 & 和后端联调跑通核心流程，能完成一次端到端演示。 \\
+Phase 4 & 修复关键交互问题，整理演示截图、操作说明和答辩所需材料。 \\
+\end{longtable}
+
+\section{合并前自检}
+
+发 PR 之前至少检查：
+
+\begin{enumerate}
+  \item 是否从最新 \texttt{main} 拉过代码。
+  \item 是否引用了当前最新契约。
+  \item 页面文案、字段名、状态流是否和后端接口一致。
+  \item 是否留下了明显的调试代码、硬编码地址或临时 mock。
+  \item 是否在 PR 描述中写清楚了变更范围和联调影响。
+\end{enumerate}
+
+\section{最容易犯的错误}
+
+\begin{itemize}
+  \item 直接在页面里写死后端返回字段，导致契约漂移。
+  \item 为了赶进度把试验性代码直接推到 \texttt{main}。
+  \item 前端和端侧各维护一套不同的数据结构。
+  \item 页面已跑通但没有说明依赖哪个接口版本，导致别人复现失败。
+\end{itemize}
+
+\section{一句话工作原则}
+
+先认契约，再做页面；先走短分支，再提 PR；先完成联调闭环，再谈视觉和体验增强。
+
+\end{document}

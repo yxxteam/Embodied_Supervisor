@@ -1,0 +1,160 @@
+\documentclass[11pt,a4paper]{ctexart}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  pdftitle={队员B使用说明（后端与数据层）}
+}
+\setlist[itemize]{leftmargin=2em}
+\setlist[enumerate]{leftmargin=2.2em}
+
+\title{队员B使用说明\\后端与数据层方向}
+\author{Embodied Supervisor 项目组}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{你的职责边界}
+
+你负责两个仓库：
+
+\begin{itemize}
+  \item \texttt{backend-api-service}
+  \item \texttt{data-access-layer}
+\end{itemize}
+
+你的核心任务是保证云端服务和数据层稳定，而不是把所有逻辑都塞进一个后端仓库。你主要负责：
+
+\begin{itemize}
+  \item 对外 API 的设计与实现。
+  \item 业务规则、鉴权和服务编排。
+  \item 数据库连接、查询封装、仓储模式和缓存逻辑。
+  \item 与共享契约仓库对齐，支撑前端和端侧联调。
+\end{itemize}
+
+你\textbf{不应}直接承担以下内容：
+
+\begin{itemize}
+  \item 在后端控制器中散落数据库细节。
+  \item 绕过契约仓库直接和前端口头约字段。
+  \item 把所有持久化逻辑都揉进 \texttt{backend-api-service}。
+\end{itemize}
+
+\section{你需要重点关注的仓库}
+
+\subsection{\texttt{backend-api-service}}
+
+建议放入：
+
+\begin{itemize}
+  \item 路由、控制器、服务层。
+  \item 业务校验与鉴权。
+  \item 对数据层的调用编排。
+  \item API 测试和运行说明。
+\end{itemize}
+
+\subsection{\texttt{data-access-layer}}
+
+建议放入：
+
+\begin{itemize}
+  \item 数据库连接与配置。
+  \item 查询与事务封装。
+  \item 仓储模式实现。
+  \item 缓存与数据访问性能优化。
+\end{itemize}
+
+\section{开始开发前的检查清单}
+
+每次开始新需求前，按下面顺序检查：
+
+\begin{enumerate}
+  \item 查看根仓库 README，确认当前阶段目标和版本节点。
+  \item 核对 \texttt{shared-models-and-apis} 中的 DTO、字段约束和接口定义。
+  \item 明确新需求是只影响业务服务，还是同时影响数据层。
+  \item 拉取最新 \texttt{main}，再从稳定分支切出短分支。
+\end{enumerate}
+
+\section{日常开发流程}
+
+\subsection{分支创建}
+
+\begin{verbatim}
+git pull --rebase origin main
+git checkout -b feature/<topic>
+\end{verbatim}
+
+试验性方案使用：
+
+\begin{verbatim}
+git checkout -b experiment/<topic>
+\end{verbatim}
+
+\subsection{提交要求}
+
+\begin{itemize}
+  \item 业务规则变更和数据访问变更尽量拆开提交，避免后续审查困难。
+  \item 一次提交只解决一类问题，不要把接口改动、数据库改动和文档改动全部揉成一条提交。
+  \item AI 生成的服务代码必须回读，不要把未经核对的异常处理和 SQL 直接合并。
+\end{itemize}
+
+\section{与你最相关的协作规则}
+
+\subsection{和前端同学协作}
+
+\begin{itemize}
+  \item 请求体、响应体、错误码和状态字段统一由契约仓库给出。
+  \item 返回格式发生变化时，先改契约，再通知前端和端侧适配。
+  \item 不允许上线后再口头解释“这个字段其实可有可无”。
+\end{itemize}
+
+\subsection{和项目负责人协作}
+
+\begin{itemize}
+  \item 非兼容接口变更必须提前同步负责人。
+  \item 需要发版本标签时，由负责人统一判断是否达到当前阶段目标。
+\end{itemize}
+
+\section{你的阶段性交付}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.18\textwidth} >{\raggedright\arraybackslash}p{0.74\textwidth}}
+\textbf{阶段} & \textbf{你要交付的内容} \\
+Phase 1 & API 仓库和数据层仓库初始化完成，明确核心实体和基础运行说明。 \\
+Phase 2 & 完成最小可用 API、核心业务规则和一套可复现的数据访问链路。 \\
+Phase 3 & 与前端和端侧联调，保证核心接口在共享契约下可稳定返回。 \\
+Phase 4 & 完成关键性能与稳定性修复，补全测试说明、部署说明和演示支撑材料。 \\
+\end{longtable}
+
+\section{合并前自检}
+
+发 PR 前至少检查：
+
+\begin{enumerate}
+  \item 是否引用了最新的共享契约。
+  \item 控制器是否仍然保持轻量，数据库逻辑是否沉到数据层。
+  \item 关键异常路径是否有明确响应。
+  \item 是否留下了开发环境专用配置或临时数据库连接。
+  \item 是否在 PR 描述中写清楚了字段变化、接口影响和回归范围。
+\end{enumerate}
+
+\section{最容易犯的错误}
+
+\begin{itemize}
+  \item 让 \texttt{backend-api-service} 直接充当数据层，导致后续难以维护。
+  \item 接口已经改了，但没有同步更新契约仓库。
+  \item 为了快，把兼容逻辑写死在控制器里，最后没人能解释清楚真实返回格式。
+  \item 本地能跑通，但没有说明依赖的数据库结构或缓存前置条件。
+\end{itemize}
+
+\section{一句话工作原则}
+
+先定契约，再写服务；先分清业务层和数据层，再实现逻辑；先保证稳定和可回归，再追求功能扩展。
+
+\end{document}

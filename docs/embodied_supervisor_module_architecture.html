@@ -1,0 +1,1708 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>督教智能 - Embodied Supervisor 模块架构蓝图</title>
+  <style>
+    :root {
+      --bg: #f3ede3;
+      --panel: rgba(255, 250, 242, 0.92);
+      --panel-strong: rgba(255, 248, 238, 0.98);
+      --ink: #251d16;
+      --muted: #6e6154;
+      --line: rgba(83, 62, 42, 0.16);
+      --gold: #c28b2c;
+      --teal: #267c77;
+      --slate: #395269;
+      --rust: #b1592d;
+      --moss: #43634f;
+      --edge: #f2d49c;
+      --backend: #bfe2dc;
+      --data: #d9e4c7;
+      --front: #f5d1c5;
+      --contract: #d3d7df;
+      --cloud: #f3d5a0;
+      --shadow: 0 20px 60px rgba(65, 46, 19, 0.08);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Segoe UI Variable", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(194, 139, 44, 0.16), transparent 24%),
+        radial-gradient(circle at 12% 18%, rgba(38, 124, 119, 0.12), transparent 18%),
+        linear-gradient(180deg, #f7f2e9 0%, var(--bg) 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(83, 62, 42, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(83, 62, 42, 0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.2));
+    }
+
+    .page {
+      width: min(1460px, calc(100vw - 32px));
+      margin: 28px auto 60px;
+    }
+
+    .hero, .card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 30px 32px 26px;
+      background:
+        linear-gradient(135deg, rgba(255, 248, 236, 0.98), rgba(248, 240, 230, 0.92)),
+        radial-gradient(circle at top right, rgba(38, 124, 119, 0.14), transparent 30%);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      top: -150px;
+      right: -90px;
+      background: radial-gradient(circle, rgba(194, 139, 44, 0.2), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--teal);
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 4.5vw, 58px);
+      line-height: 1.06;
+      max-width: 980px;
+    }
+
+    .subtitle {
+      margin: 16px 0 0;
+      max-width: 1100px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    .chip-row {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(83, 62, 42, 0.12);
+      background: rgba(255, 252, 247, 0.78);
+      font-size: 13px;
+      color: #45372b;
+      font-weight: 600;
+    }
+
+    .chip b { color: var(--ink); }
+    .section { margin-top: 22px; }
+    .grid { display: grid; gap: 18px; }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card { padding: 22px 24px; }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 24px;
+      letter-spacing: 0.02em;
+    }
+
+    .section-desc {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 15px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel-strong);
+      padding: 18px 18px 16px;
+      min-height: 182px;
+    }
+
+    .mini-card h3 {
+      margin: 0 0 10px;
+      font-size: 19px;
+    }
+
+    .mini-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .tag.edge { background: var(--gold); }
+    .tag.contract { background: var(--slate); }
+    .tag.cloud { background: var(--rust); }
+    .tag.asset { background: var(--moss); }
+
+    .diagram-shell {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(247, 240, 231, 0.95));
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background:
+        radial-gradient(circle at 18% 15%, rgba(194, 139, 44, 0.08), transparent 22%),
+        radial-gradient(circle at 82% 12%, rgba(38, 124, 119, 0.08), transparent 18%);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 16px 20px 20px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 250, 242, 0.75);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .legend .edge::before { background: var(--edge); }
+    .legend .backend::before { background: var(--backend); }
+    .legend .data::before { background: var(--data); }
+    .legend .front::before { background: var(--front); }
+    .legend .contract::before { background: var(--contract); }
+    .legend .cloud::before { background: var(--cloud); }
+
+    .diagram-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .diagram-tip {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .diagram-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .diagram-hidden-panel {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(83, 62, 42, 0.12);
+      border-radius: 18px;
+      background: rgba(255, 252, 247, 0.88);
+    }
+
+    .diagram-hidden-panel strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .hidden-module-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      min-height: 34px;
+    }
+
+    .hidden-module-empty {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hidden-module-chip {
+      border: 1px solid rgba(83, 62, 42, 0.14);
+      background: rgba(245, 239, 229, 0.95);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .diagram-button {
+      border: 1px solid rgba(83, 62, 42, 0.14);
+      background: rgba(255, 252, 247, 0.95);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .diagram-scroll {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(247, 240, 231, 0.95));
+    }
+
+    .architecture-board {
+      position: relative;
+      min-width: 1860px;
+      min-height: 1280px;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 18% 15%, rgba(194, 139, 44, 0.08), transparent 22%),
+        radial-gradient(circle at 82% 12%, rgba(38, 124, 119, 0.08), transparent 18%);
+    }
+
+    .connection-layer,
+    .label-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .connection-layer {
+      pointer-events: none;
+      overflow: visible;
+      z-index: 1;
+    }
+
+    .label-layer {
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .connector-label {
+      position: absolute;
+      max-width: 250px;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(83, 62, 42, 0.12);
+      background: rgba(255, 251, 244, 0.96);
+      border-radius: 14px;
+      padding: 8px 10px;
+      box-shadow: 0 14px 28px rgba(73, 57, 35, 0.08);
+      text-align: center;
+    }
+
+    .connector-label strong {
+      display: block;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--ink);
+    }
+
+    .connector-label span {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .module-node {
+      position: absolute;
+      width: 252px;
+      border-radius: 22px;
+      border: 1px solid rgba(83, 62, 42, 0.14);
+      background: rgba(255, 252, 247, 0.96);
+      box-shadow: 0 18px 36px rgba(70, 52, 30, 0.12);
+      padding: 14px 16px 14px;
+      cursor: grab;
+      user-select: none;
+      z-index: 3;
+    }
+
+    .module-node:active {
+      cursor: grabbing;
+    }
+
+    .module-node[data-group="contracts"] { background: rgba(228, 233, 241, 0.98); }
+    .module-node[data-group="input"] { background: rgba(239, 243, 248, 0.98); }
+    .module-node[data-group="edge"] { background: rgba(255, 245, 223, 0.98); }
+    .module-node[data-group="backend"] { background: rgba(232, 248, 244, 0.98); }
+    .module-node[data-group="cloud"] { background: rgba(255, 239, 216, 0.98); }
+    .module-node[data-group="data"] { background: rgba(240, 247, 231, 0.98); }
+    .module-node[data-group="front"] { background: rgba(252, 234, 228, 0.98); }
+    .module-node[data-group="student"] { background: rgba(241, 244, 248, 0.98); }
+
+    .module-node.wide {
+      width: 308px;
+    }
+
+    .module-node.is-hidden {
+      display: none;
+    }
+
+    .module-node-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .module-node-top .module-title {
+      margin: 0;
+      flex: 1 1 auto;
+    }
+
+    .module-hide-button {
+      flex: 0 0 auto;
+      border: 1px solid rgba(83, 62, 42, 0.14);
+      background: rgba(255, 252, 247, 0.92);
+      color: #4f3d2f;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .module-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 10px;
+      background: var(--slate);
+    }
+
+    .module-node[data-group="edge"] .module-badge { background: var(--gold); }
+    .module-node[data-group="backend"] .module-badge { background: var(--teal); }
+    .module-node[data-group="cloud"] .module-badge { background: var(--rust); }
+    .module-node[data-group="data"] .module-badge { background: var(--moss); }
+    .module-node[data-group="front"] .module-badge { background: #b46a48; }
+    .module-node[data-group="input"] .module-badge,
+    .module-node[data-group="student"] .module-badge { background: #667789; }
+
+    .module-title {
+      margin: 0 0 6px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .module-subtitle {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .module-api {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(83, 62, 42, 0.16);
+      color: #4b3c2f;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .module-api strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .module-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .connector-summary {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .connector-item {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: rgba(255, 252, 247, 0.92);
+    }
+
+    .connector-item h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .connector-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .connector-item code {
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    .flow-list { display: grid; gap: 14px; }
+
+    .flow-item {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px 18px;
+      background: rgba(255, 252, 247, 0.92);
+    }
+
+    .flow-item h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .flow-item ol, .flow-item ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .table-shell {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 252, 247, 0.85);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1120px;
+    }
+
+    th, td {
+      vertical-align: top;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(83, 62, 42, 0.1);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: rgba(246, 240, 231, 0.98);
+      color: #36291f;
+      text-align: left;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    td strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .mono, code, pre {
+      font-family: "Consolas", "SFMono-Regular", monospace;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(57, 82, 105, 0.08);
+      color: #213446;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: #f5efe5;
+      color: #2f241a;
+      overflow-x: auto;
+      line-height: 1.65;
+      font-size: 13px;
+      border: 1px solid rgba(83, 62, 42, 0.12);
+    }
+
+    .api-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .api-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 252, 247, 0.9);
+      padding: 18px;
+    }
+
+    .api-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .api-card p, .api-card ul {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .api-card ul {
+      padding-left: 18px;
+      margin-top: 10px;
+    }
+
+    .repo-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .repo-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px 16px 14px;
+      background: rgba(255, 252, 247, 0.9);
+    }
+
+    .repo-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .repo-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    @media (max-width: 1240px) {
+      .grid-4, .repo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-2, .api-grid { grid-template-columns: 1fr; }
+      .connector-summary { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100vw - 20px, 100%);
+        margin-top: 12px;
+      }
+
+      .hero, .card { padding: 18px; }
+      .grid-4, .grid-2, .repo-grid, .api-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Embodied Supervisor / 督教智能</p>
+      <h1>教师侧监督系统模块架构蓝图</h1>
+      <p class="subtitle">
+        这份设计基于 <code>reference/初选项目设计方案书.pdf</code> 的业务闭环、<code>reference/模块化与敏捷并行...</code> 的多仓库原则，
+        以及当前 <code>yolodemo</code> 已经验证的三个原型能力：SOP / todo 驱动的视频节点切分、教师侧实时监督台雏形、离线网页回放包导出。
+        设计目标不是做“通用机器人控制平台”，而是做一套独立于学生侧执行闭环之外的教师侧监督、纠偏和教学资产化系统。
+      </p>
+      <div class="chip-row">
+        <span class="chip"><b>业务定位</b> 教师侧监督智能体，不直接接管底层运动控制</span>
+        <span class="chip"><b>核心闭环</b> 感知 → 判断 → 介入 → 沉淀</span>
+        <span class="chip"><b>部署原则</b> 边缘实时闭环优先，云端增强推理按需介入</span>
+        <span class="chip"><b>工程组织</b> 5 仓库 + 契约优先 + 结构化 JSON 事件流</span>
+      </div>
+    </header>
+
+    <section class="section grid grid-4">
+      <article class="mini-card">
+        <span class="tag edge">边缘优先</span>
+        <h3>把高频监督留在 DK-2500</h3>
+        <p>多路视频接入、时间轴对齐、轻量检测、SOP 状态机和阈值告警都先在边缘侧完成，避免云端往返时延破坏实时纠偏。</p>
+      </article>
+      <article class="mini-card">
+        <span class="tag contract">契约优先</span>
+        <h3>先定义对象，再让模块互联</h3>
+        <p>所有跨模块对象统一沉淀到 <code>shared-models-and-apis</code>：<code>TaskContextFrame</code>、<code>DeviationEvent</code>、<code>GuidanceSuggestion</code>、<code>TeachingCard</code>。</p>
+      </article>
+      <article class="mini-card">
+        <span class="tag cloud">云端增强</span>
+        <h3>复杂异常再升级到 VLM</h3>
+        <p>边缘侧只负责“看得快、判得稳”，云端只在低置信度、复杂因果和需要自然语言解释时介入，避免把整个系统做成“云端全知全能”。</p>
+      </article>
+      <article class="mini-card">
+        <span class="tag asset">资产闭环</span>
+        <h3>失败样本不止告警，还要沉淀</h3>
+        <p>关键帧、短视频片段、偏差类型、指导文本和纠偏前后对比统一沉淀为教学卡片与训练候选样本，支撑后续 RAG、复盘和模型微调。</p>
+      </article>
+    </section>
+
+    <section class="section card">
+      <h2 class="section-title">总体架构图</h2>
+      <p class="section-desc">
+        总体结构按“外部数据源、边缘监督、云端控制面、数据层、教师工作站、中央契约层”组织。
+        其中 <code>yolodemo</code> 的当前能力主要落在边缘监督和回放资产这两块，未来应被拆解并迁入正式仓库，而不是继续作为一个单仓脚本项目堆功能。
+      </p>
+      <div class="diagram-shell">
+        <div class="card" style="margin: 0; padding: 18px;">
+          <div class="diagram-toolbar">
+            <div class="diagram-tip">
+              可直接拖动模块卡片重排视图。连线会自动更新；线上的标签只保留关键 API 简写，下面的连接清单给出更完整的接口说明。
+            </div>
+            <div class="diagram-actions">
+              <button class="diagram-button" type="button" id="diagram-reset">重置布局</button>
+            </div>
+          </div>
+          <div class="diagram-hidden-panel">
+            <div>
+              <strong>已隐藏模块</strong>
+              <div class="hidden-module-list" id="hidden-module-list">
+                <span class="hidden-module-empty">当前无隐藏模块</span>
+              </div>
+            </div>
+            <div class="diagram-actions">
+              <button class="diagram-button" type="button" id="diagram-show-all">显示全部</button>
+            </div>
+          </div>
+          <div class="diagram-scroll">
+            <div class="architecture-board" id="architecture-board">
+              <svg class="connection-layer" id="connection-layer" aria-hidden="true"></svg>
+              <div class="label-layer" id="label-layer" aria-hidden="true"></div>
+
+              <article class="module-node wide" data-id="contracts" data-group="contracts" style="left: 730px; top: 24px;">
+                <span class="module-badge">contracts</span>
+                <h3 class="module-title">shared-models-and-apis</h3>
+                <p class="module-subtitle">统一 DTO、OpenAPI、JSON Schema、错误码与示例请求响应。</p>
+                <ul class="module-list">
+                  <li><code>TaskContextFrame</code></li>
+                  <li><code>DeviationEvent</code></li>
+                  <li><code>GuidanceSuggestion</code></li>
+                  <li><code>TeachingCard</code></li>
+                </ul>
+                <div class="module-api">
+                  <strong>暴露面</strong>
+                  <code>openapi/supervision-api.yaml</code><br>
+                  <code>schemas/*.json</code> / <code>proto/*.proto</code>
+                </div>
+              </article>
+
+              <article class="module-node" data-id="input" data-group="input" style="left: 40px; top: 244px;">
+                <span class="module-badge">input</span>
+                <h3 class="module-title">终端数据输入层</h3>
+                <p class="module-subtitle">摄像头、麦克风、机器人状态和外部 I/O。</p>
+                <ul class="module-list">
+                  <li>主视角 / 辅视角视频</li>
+                  <li>I2S / 麦克风阵列</li>
+                  <li>Robot state / 传感器</li>
+                </ul>
+                <div class="module-api">
+                  <strong>输入协议</strong>
+                  <code>RTSP</code> / <code>UVC</code> / <code>I2S</code> / <code>gRPC</code>
+                </div>
+              </article>
+
+              <article class="module-node" data-id="student" data-group="student" style="left: 56px; top: 870px;">
+                <span class="module-badge">student</span>
+                <h3 class="module-title">学生侧执行体</h3>
+                <p class="module-subtitle">机器人本体控制器，不被教师系统直接接管。</p>
+                <ul class="module-list">
+                  <li>状态订阅</li>
+                  <li>可选 Reset / Pause</li>
+                  <li>不下发运动轨迹</li>
+                </ul>
+                <div class="module-api">
+                  <strong>控制边界</strong>
+                  <code>guidance</code> / <code>command</code> topic only
+                </div>
+              </article>
+
+              <article class="module-node" data-id="edge-capture" data-group="edge" style="left: 430px; top: 254px;">
+                <span class="module-badge">edge</span>
+                <h3 class="module-title">capture-gateway</h3>
+                <p class="module-subtitle">多路音视频与机器人状态采集适配。</p>
+                <div class="module-api">
+                  <strong>暴露事件</strong>
+                  <code>emitFrameEnvelope()</code><br>
+                  <code>emitRobotStateFrame()</code>
+                </div>
+              </article>
+
+              <article class="module-node" data-id="edge-context" data-group="edge" style="left: 430px; top: 488px;">
+                <span class="module-badge">edge</span>
+                <h3 class="module-title">timeline-context</h3>
+                <p class="module-subtitle">时间戳对齐、上下文快照和本地 ring buffer。</p>
+                <div class="module-api">
+                  <strong>暴露事件</strong>
+                  <code>publish TaskContextFrame</code><br>
+                  <code>GET /local/sessions/{id}/timeline</code>
+                </div>
+              </article>
+
+              <article class="module-node" data-id="edge-supervisor" data-group="edge" style="left: 430px; top: 722px;">
+                <span class="module-badge">edge</span>
+                <h3 class="module-title">sop-supervisor</h3>
+                <p class="module-subtitle">轻量检测 + FSM + SOP / todo 节点监督。</p>
+                <div class="module-api">
+                  <strong>暴露事件</strong>
+                  <code>TaskNodeProgress</code><br>
+                  <code>DeviationEvent</code><br>
+                  <code>InterventionTrigger</code>
+                </div>
+              </article>
+
+              <article class="module-node" data-id="edge-uplink" data-group="edge" style="left: 430px; top: 974px;">
+                <span class="module-badge">edge</span>
+                <h3 class="module-title">uplink-agent</h3>
+                <p class="module-subtitle">边缘上送代理与下行指导桥。</p>
+                <div class="module-api">
+                  <strong>暴露接口</strong>
+                  <code>POST /api/v1/sessions</code><br>
+                  <code>POST /edge-events:batch</code><br>
+                  <code>POST /media</code>
+                </div>
+              </article>
+
+              <article class="module-node wide" data-id="backend-ingest" data-group="backend" style="left: 960px; top: 252px;">
+                <span class="module-badge">backend</span>
+                <h3 class="module-title">supervision-ingest-api</h3>
+                <p class="module-subtitle">会话创建、事件批量接收、媒体索引登记。</p>
+                <div class="module-api">
+                  <strong>暴露接口</strong>
+                  <code>POST /api/v1/sessions</code><br>
+                  <code>POST /api/v1/sessions/{id}/edge-events:batch</code><br>
+                  <code>POST /api/v1/sessions/{id}/media</code>
+                </div>
+              </article>
+
+              <article class="module-node wide" data-id="backend-guidance" data-group="backend" style="left: 960px; top: 518px;">
+                <span class="module-badge">backend</span>
+                <h3 class="module-title">guidance-orchestrator</h3>
+                <p class="module-subtitle">RAG 检索、Prompt 组装、复杂异常升级到云端 VLM。</p>
+                <div class="module-api">
+                  <strong>暴露接口</strong>
+                  <code>POST /api/v1/sessions/{id}/guidance-requests</code><br>
+                  <code>POST /api/v1/guidance/advise</code>
+                </div>
+              </article>
+
+              <article class="module-node wide" data-id="backend-realtime" data-group="backend" style="left: 960px; top: 794px;">
+                <span class="module-badge">backend</span>
+                <h3 class="module-title">realtime-session-hub</h3>
+                <p class="module-subtitle">实时状态流、告警推送和人工介入入口。</p>
+                <div class="module-api">
+                  <strong>暴露接口</strong>
+                  <code>GET /api/v1/sessions/{id}/stream</code><br>
+                  <code>POST /api/v1/sessions/{id}/interventions</code>
+                </div>
+              </article>
+
+              <article class="module-node" data-id="backend-asset" data-group="backend" style="left: 1320px; top: 794px;">
+                <span class="module-badge">backend</span>
+                <h3 class="module-title">asset-service</h3>
+                <p class="module-subtitle">教学卡片生成、回放包导出和语义检索入口。</p>
+                <div class="module-api">
+                  <strong>暴露接口</strong>
+                  <code>POST /api/v1/assets/teaching-cards:generate</code><br>
+                  <code>POST /api/v1/search/semantic</code>
+                </div>
+              </article>
+
+              <article class="module-node" data-id="cloud" data-group="cloud" style="left: 1510px; top: 188px;">
+                <span class="module-badge">cloud</span>
+                <h3 class="module-title">云端 VLM / RAG</h3>
+                <p class="module-subtitle">复杂异常因果解释与自然语言纠偏建议生成。</p>
+                <div class="module-api">
+                  <strong>接口约束</strong>
+                  <code>HTTPS JSON</code><br>
+                  keyframes + context + retrieved cases
+                </div>
+              </article>
+
+              <article class="module-node" data-id="data" data-group="data" style="left: 1510px; top: 540px;">
+                <span class="module-badge">data</span>
+                <h3 class="module-title">data-access-layer</h3>
+                <p class="module-subtitle">PostgreSQL、Redis、MinIO/S3、Qdrant。</p>
+                <div class="module-api">
+                  <strong>内部仓储</strong>
+                  <code>SessionRepository</code><br>
+                  <code>EmbeddingRepository</code><br>
+                  <code>MediaObjectRepository</code>
+                </div>
+              </article>
+
+              <article class="module-node wide" data-id="front" data-group="front" style="left: 1280px; top: 1040px;">
+                <span class="module-badge">frontend</span>
+                <h3 class="module-title">teacher-workstation</h3>
+                <p class="module-subtitle">实时监督、时间轴回放、语义搜索与教学卡片管理。</p>
+                <div class="module-api">
+                  <strong>消费接口</strong>
+                  <code>GET /api/v1/sessions/{id}</code><br>
+                  <code>GET /api/v1/sessions/{id}/stream</code><br>
+                  <code>POST /api/v1/search/semantic</code>
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="legend">
+            <span class="contract">中央契约层：先定对象与字段，再让系统联调</span>
+            <span class="edge">边缘侧：高频感知、监督、初判和事件上送</span>
+            <span class="backend">控制面：会话、告警、RAG、导出、审计</span>
+            <span class="data">数据层：元数据、媒体对象、向量记忆、实时缓存</span>
+            <span class="front">工作站：实时监督、回放检索、教学资产管理</span>
+            <span class="cloud">外部增强：云端 VLM 只处理复杂解释和教学建议</span>
+          </div>
+          <div class="connector-summary">
+            <div class="connector-item">
+              <h3>终端输入层 → capture-gateway</h3>
+              <p>现场数据接入。视频走 <code>RTSP/UVC</code>，音频走 <code>I2S/USB</code>，机器人状态建议走 <code>gRPC RobotState.Subscribe()</code>。</p>
+            </div>
+            <div class="connector-item">
+              <h3>capture-gateway → timeline-context</h3>
+              <p>内部对象流：<code>FrameEnvelope</code>、<code>AudioEnvelope</code>、<code>RobotStateFrame</code>。目标是统一时间基准，而不是让监督引擎自己拉流。</p>
+            </div>
+            <div class="connector-item">
+              <h3>timeline-context → sop-supervisor</h3>
+              <p>输入对象：<code>TaskContextFrame</code>。监督引擎基于该对象输出 <code>TaskNodeProgress</code>、<code>DeviationEvent</code>、<code>InterventionTrigger</code>。</p>
+            </div>
+            <div class="connector-item">
+              <h3>sop-supervisor → uplink-agent</h3>
+              <p>边缘先做初判，复杂异常再升级。上传载荷应包含节点 ID、偏差类型、置信度、关键帧引用和摘要指标。</p>
+            </div>
+            <div class="connector-item">
+              <h3>uplink-agent → supervision-ingest-api</h3>
+              <p>边缘入云三条主 API：<code>POST /api/v1/sessions</code>、<code>POST /api/v1/sessions/{id}/edge-events:batch</code>、<code>POST /api/v1/sessions/{id}/media</code>。</p>
+            </div>
+            <div class="connector-item">
+              <h3>supervision-ingest-api → data-access-layer</h3>
+              <p>写入会话、事件和媒体索引：<code>SessionRepository.upsert()</code>、<code>EventRepository.batchInsert()</code>、<code>MediaObjectRepository.finalize_object()</code>。</p>
+            </div>
+            <div class="connector-item">
+              <h3>guidance-orchestrator → 云端 VLM / RAG</h3>
+              <p>复杂异常建议接口：<code>POST /api/v1/guidance/advise</code>。请求体应包含关键帧、节点上下文、历史相似案例、Prompt 模板版本。</p>
+            </div>
+            <div class="connector-item">
+              <h3>guidance-orchestrator / asset-service → data-access-layer</h3>
+              <p>RAG 查询走 <code>EmbeddingRepository.search()</code>；教学卡片与导出任务写入 PostgreSQL，媒体落对象存储，向量写入 Qdrant。</p>
+            </div>
+            <div class="connector-item">
+              <h3>realtime-session-hub → teacher-workstation</h3>
+              <p>前台实时消费：<code>GET /api/v1/sessions/{id}</code> + <code>GET /api/v1/sessions/{id}/stream</code>。v1 继续沿用 <code>SSE</code>，避免过早引入 WebSocket 复杂性。</p>
+            </div>
+            <div class="connector-item">
+              <h3>teacher-workstation → realtime-session-hub → uplink-agent</h3>
+              <p>人工介入从工作站发起：<code>POST /api/v1/sessions/{id}/interventions</code>，后端再通过 <code>MQTT embodied/{site}/{robot}/guidance</code> 或 <code>/command</code> 下发。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section grid grid-2">
+      <article class="card">
+        <h2 class="section-title">两条教学闭环</h2>
+        <div class="flow-list">
+          <div class="flow-item">
+            <h3>内闭环：单次任务实时监督</h3>
+            <ol>
+              <li>边缘侧接入多路视频、音频和机器人状态，统一到同一时间轴。</li>
+              <li>使用轻量检测 + SOP 状态机完成时序、空间、逻辑三类偏差筛查。</li>
+              <li>低复杂度异常直接在边缘生成告警；复杂异常打包关键帧和上下文升级到云端。</li>
+              <li>后端通过 <code>realtime-session-hub</code> 以 SSE 推送状态流，工作站显示节点进度、关键事件和介入建议。</li>
+              <li>教师确认后可下发指导文本或复位命令，但不直接接管学生侧轨迹控制。</li>
+            </ol>
+          </div>
+          <div class="flow-item">
+            <h3>外闭环：失败样本资产化</h3>
+            <ol>
+              <li>边缘或后端截取关键帧、异常片段、上下文窗口与度量指标。</li>
+              <li>后端将元数据写入 PostgreSQL，将视频与图片落到 MinIO/S3，将 embedding 写入 Qdrant。</li>
+              <li>RAG 检索历史相似案例，生成结构化教学卡片。</li>
+              <li>工作站支持回放、检索、对比和导出，用于复盘、答辩展示与后续训练数据集构建。</li>
+            </ol>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="section-title">从当前原型到正式工程的迁移映射</h2>
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>当前原型</th>
+                <th>正式模块</th>
+                <th>迁移说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>yolodemo/schema.py</code></td>
+                <td><code>shared-models-and-apis</code></td>
+                <td>把 <code>TodoPlan</code>、<code>TodoNode</code>、<code>AnalysisReport</code>、<code>LiveJobSnapshot</code> 进一步抽成跨仓共享 DTO。</td>
+              </tr>
+              <tr>
+                <td><code>yolodemo/signals.py</code><br><code>signal_pipeline.py</code></td>
+                <td><code>edge-client-sdk/sop-supervisor</code></td>
+                <td>保留 todo / SOP 驱动的视频事件切分思想，把单场景信号规则升级为通用边缘监督引擎。</td>
+              </tr>
+              <tr>
+                <td><code>yolodemo/live_monitor.py</code><br><code>server.py</code></td>
+                <td><code>backend-api-service/realtime-session-hub</code><br><code>edge-client-sdk/uplink-agent</code></td>
+                <td>当前已经证明“教师侧监督台”方向成立，下一步应把上传、状态流、终局校验拆成正式控制面 API 与边缘上行代理。</td>
+              </tr>
+              <tr>
+                <td><code>yolodemo/web.py</code></td>
+                <td><code>backend-api-service/asset-service</code><br><code>frontend-web-app/replay-search-studio</code></td>
+                <td>网页回放包导出是教学资产模块的直接原型，可扩展为时间轴回放、语义检索与教学卡片浏览。</td>
+              </tr>
+              <tr>
+                <td><code>examples/*.yaml</code></td>
+                <td><code>shared-models-and-apis/examples/</code><br><code>configs/sop/</code></td>
+                <td>示例 todo 配置应沉淀为 SOP 图谱模板，支持不同任务场景的节点定义与容差配置。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="section card">
+      <h2 class="section-title">模块清单：技术、暴露接口与协议</h2>
+      <p class="section-desc">
+        下表按正式仓库拆分模块。这里的接口分两类：一类是对外 HTTP / SSE / MQTT / gRPC 接口；另一类是仓库内部明确暴露的结构化事件或 SDK 接口。
+        这样做的目的是避免后续再次把边界写回“一个 Python 仓库 + 一堆脚本函数”。
+      </p>
+      <div class="table-shell">
+        <table>
+          <thead>
+            <tr>
+              <th>仓库</th>
+              <th>模块</th>
+              <th>建议技术</th>
+              <th>暴露 API / 事件</th>
+              <th>主要协议</th>
+              <th>设计说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>shared-models-and-apis</strong></td>
+              <td><strong>contract-registry</strong>统一 DTO、字段约束、错误码、示例</td>
+              <td>OpenAPI 3.1、JSON Schema 2020-12、Protobuf、<code>datamodel-codegen</code>、<code>openapi-typescript</code></td>
+              <td><code>openapi/supervision-api.yaml</code><br><code>schemas/deviation-event.schema.json</code><br><code>proto/robot_state.proto</code></td>
+              <td>Git tag 分发；运行时由各模块消费这些契约</td>
+              <td>所有跨仓字段变更必须先改这里，保证边缘、后端、前端不会各写一套“自以为正确”的数据结构。</td>
+            </tr>
+            <tr>
+              <td><strong>edge-client-sdk</strong></td>
+              <td><strong>capture-gateway</strong>现场接入与设备适配</td>
+              <td>Python 3.11、GStreamer、OpenCV、PyAV、<code>asyncio</code></td>
+              <td>内部对象：<code>FrameEnvelope</code>、<code>AudioEnvelope</code>、<code>RobotStateFrame</code><br>本地健康检查：<code>GET /local/healthz</code></td>
+              <td>RTSP、UVC、USB3.2、I2S、gRPC、MQTT</td>
+              <td>把多路视频、音频和机器人状态先接成统一输入层，后续监督逻辑才有一致时间基准。</td>
+            </tr>
+            <tr>
+              <td><strong>edge-client-sdk</strong></td>
+              <td><strong>timeline-context</strong>时间轴与上下文快照</td>
+              <td>Pydantic v2、NumPy、SQLite / DuckDB ring buffer、RTC 校时</td>
+              <td>内部事件：<code>TaskContextFrame</code><br>本地查询：<code>GET /local/sessions/{id}/timeline</code></td>
+              <td>进程内 <code>asyncio.Queue</code> + JSON DTO</td>
+              <td>这是“上下文重构”的落点，负责把多模态输入对齐成统一快照，而不是让检测模块直接各吃各的数据源。</td>
+            </tr>
+            <tr>
+              <td><strong>edge-client-sdk</strong></td>
+              <td><strong>sop-supervisor</strong>任务级监督与偏差识别</td>
+              <td>OpenVINO / ONNX Runtime、YOLOv8、规则引擎、FSM、YAML SOP 图谱</td>
+              <td>内部事件：<code>TaskNodeProgress</code>、<code>DeviationEvent</code>、<code>InterventionTrigger</code></td>
+              <td>内部 JSON 事件流</td>
+              <td>直接承接 <code>yolodemo</code> 的 todo / signal pipeline 思路，把“单场景视频语义切分”升级为通用 SOP 监督引擎。</td>
+            </tr>
+            <tr>
+              <td><strong>edge-client-sdk</strong></td>
+              <td><strong>uplink-agent / command-bridge</strong>上行与下行命令桥</td>
+              <td>HTTPX、Paho MQTT、断点续传、幂等队列（SQLite）</td>
+              <td><code>POST /api/v1/sessions</code><br><code>POST /api/v1/sessions/{id}/edge-events:batch</code><br><code>POST /api/v1/sessions/{id}/media</code><br>订阅：<code>embodied/{site}/{robot}/guidance</code></td>
+              <td>MQTT 5.0/TLS、HTTPS JSON、HTTPS multipart</td>
+              <td>事件走 MQTT，图片/视频走 HTTPS 上传。可选接收指导文本与复位命令，但默认不接管机器人轨迹控制。</td>
+            </tr>
+            <tr>
+              <td><strong>backend-api-service</strong></td>
+              <td><strong>supervision-ingest-api</strong>会话与事件入口</td>
+              <td>FastAPI、Uvicorn、Pydantic v2、JWT / Service Token</td>
+              <td><code>POST /api/v1/sessions</code><br><code>GET /api/v1/sessions/{id}</code><br><code>POST /api/v1/sessions/{id}/edge-events:batch</code><br><code>POST /api/v1/sessions/{id}/media</code></td>
+              <td>REST JSON、multipart</td>
+              <td>这是边缘到云端的控制面入口，负责把事件、媒体与会话状态登记到后端和数据层。</td>
+            </tr>
+            <tr>
+              <td><strong>backend-api-service</strong></td>
+              <td><strong>guidance-orchestrator</strong>云端增强推理</td>
+              <td>FastAPI worker、Jinja2 Prompt 模板、RAG 检索器、可插拔 VLM Provider Adapter、Redis Streams</td>
+              <td><code>POST /api/v1/sessions/{id}/guidance-requests</code><br><code>POST /api/v1/guidance/advise</code><br>返回：<code>GuidanceSuggestion</code></td>
+              <td>内部 Redis Streams；外部 HTTPS JSON</td>
+              <td>只处理边缘侧判不清的复杂异常，把关键帧、节点上下文和历史案例拼成 prompt，再调用云端 VLM。</td>
+            </tr>
+            <tr>
+              <td><strong>backend-api-service</strong></td>
+              <td><strong>realtime-session-hub</strong>实时流与人工介入</td>
+              <td>FastAPI、SSE、Redis Pub/Sub、审计日志</td>
+              <td><code>GET /api/v1/sessions/{id}/stream</code><br><code>GET /api/v1/sessions/{id}/alerts</code><br><code>POST /api/v1/sessions/{id}/interventions</code></td>
+              <td>SSE、REST JSON、MQTT 下行</td>
+              <td>当前 <code>yolodemo/server.py</code> 已经证明 EventSource 方案可行，因此 v1 继续沿用 SSE；以后真要双向低延迟遥操作，再升级 WebSocket。</td>
+            </tr>
+            <tr>
+              <td><strong>backend-api-service</strong></td>
+              <td><strong>asset-service</strong>教学资产与导出</td>
+              <td>ffmpeg、OpenCV、后台任务调度、模板渲染、数据集导出器</td>
+              <td><code>POST /api/v1/assets/teaching-cards:generate</code><br><code>GET /api/v1/assets/teaching-cards</code><br><code>POST /api/v1/search/semantic</code><br><code>POST /api/v1/exports/dataset</code></td>
+              <td>REST JSON、ZIP / JSONL / MP4 下载</td>
+              <td>承接当前 <code>web.py</code> 的回放包导出能力，把关键帧、片段、说明文本和标签沉淀为正式资产对象。</td>
+            </tr>
+            <tr>
+              <td><strong>data-access-layer</strong></td>
+              <td><strong>session-event-repository</strong>结构化元数据存储</td>
+              <td>PostgreSQL 16、SQLAlchemy 2、Alembic、Redis 7</td>
+              <td>内部仓储接口：<code>SessionRepository</code>、<code>EventRepository</code>、<code>InterventionRepository</code></td>
+              <td>PostgreSQL wire protocol、RESP</td>
+              <td>会话、告警、节点状态、人工介入、导出任务等结构化元数据都在这里，不应该散落到 API 控制器里。</td>
+            </tr>
+            <tr>
+              <td><strong>data-access-layer</strong></td>
+              <td><strong>semantic-index-repository</strong>向量检索与案例召回</td>
+              <td>Qdrant、CLIP / SigLIP embedding、重排器</td>
+              <td>内部仓储接口：<code>EmbeddingRepository.upsert</code><br><code>EmbeddingRepository.search</code></td>
+              <td>Qdrant HTTP / gRPC</td>
+              <td>把“视频片段 + 指导文本 + 标签”映射到统一向量空间，为 RAG 和教学卡片生成提供召回基础。</td>
+            </tr>
+            <tr>
+              <td><strong>data-access-layer</strong></td>
+              <td><strong>media-object-repository</strong>媒体对象仓</td>
+              <td>MinIO / S3、预签名 URL、生命周期策略</td>
+              <td>内部仓储接口：<code>issue_upload_url</code>、<code>finalize_object</code>、<code>build_signed_read_url</code></td>
+              <td>S3 API、multipart upload</td>
+              <td>原始视频、关键帧、异常截图、回放包都走对象存储，避免把数据库当文件系统用。</td>
+            </tr>
+            <tr>
+              <td><strong>frontend-web-app</strong></td>
+              <td><strong>live-monitor-workbench</strong>教师实时监督台</td>
+              <td>React 18、TypeScript、Vite、TanStack Query、ECharts、Zustand</td>
+              <td>路由：<code>/live/:sessionId</code><br>消费：<code>GET /api/v1/sessions/{id}</code><br><code>GET /api/v1/sessions/{id}/stream</code></td>
+              <td>REST JSON、SSE、预签名媒体 URL</td>
+              <td>职责是看状态、看告警、看建议，不是直接碰数据库。时间轴、节点进度、关键事件都在这里展示。</td>
+            </tr>
+            <tr>
+              <td><strong>frontend-web-app</strong></td>
+              <td><strong>replay-search-studio</strong>回放检索与资产管理</td>
+              <td>React 18、TypeScript、视频播放器组件、全文 / 标签搜索 UI</td>
+              <td>路由：<code>/replay/:sessionId</code>、<code>/assets</code>、<code>/search</code><br>消费：<code>POST /api/v1/search/semantic</code></td>
+              <td>REST JSON、预签名 URL</td>
+              <td>承接复盘、对比、导出和答辩展示，最终把“教学资产化”变成可见、可检索、可复用的界面能力。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section grid grid-2">
+      <article class="card">
+        <h2 class="section-title">核心 API 面与事件契约</h2>
+        <div class="api-grid">
+          <div class="api-card">
+            <h3>控制面 OpenAPI</h3>
+            <pre>POST   /api/v1/sessions
+GET    /api/v1/sessions/{sessionId}
+POST   /api/v1/sessions/{sessionId}/edge-events:batch
+POST   /api/v1/sessions/{sessionId}/media
+POST   /api/v1/sessions/{sessionId}/guidance-requests
+GET    /api/v1/sessions/{sessionId}/stream
+POST   /api/v1/sessions/{sessionId}/interventions</pre>
+            <ul>
+              <li><code>sessions</code> 用来标识一次任务执行或一次演示过程。</li>
+              <li><code>edge-events:batch</code> 用来接收边缘侧批量上送的节点进度、偏差与心跳。</li>
+              <li><code>stream</code> 是教师工作站消费的状态流接口，v1 使用 SSE。</li>
+            </ul>
+          </div>
+          <div class="api-card">
+            <h3>资产与检索 API</h3>
+            <pre>POST   /api/v1/assets/teaching-cards:generate
+GET    /api/v1/assets/teaching-cards
+POST   /api/v1/search/semantic
+POST   /api/v1/exports/dataset
+GET    /api/v1/assets/{assetId}</pre>
+            <ul>
+              <li>教学卡片生成不应只依赖 LLM 文本，还必须关联关键帧、片段和节点上下文。</li>
+              <li>语义检索接口同时支持文本 query、标签 filter 和时间范围过滤。</li>
+            </ul>
+          </div>
+          <div class="api-card">
+            <h3>MQTT Topic 建议</h3>
+            <pre>embodied/{siteId}/{robotId}/heartbeat
+embodied/{siteId}/{robotId}/events
+embodied/{siteId}/{robotId}/alerts
+embodied/{siteId}/{robotId}/guidance
+embodied/{siteId}/{robotId}/command</pre>
+            <ul>
+              <li><code>events</code> 发布结构化 JSON 事件，适合低延迟、弱网络条件下的边缘上送。</li>
+              <li><code>command</code> 只用于指导文本、软暂停、复位等教师侧控制，不扩展为底层运动轨迹通道。</li>
+            </ul>
+          </div>
+          <div class="api-card">
+            <h3>关键事件对象示例</h3>
+            <pre>{
+  "session_id": "sess_20260327_001",
+  "robot_id": "robot_arm_01",
+  "sop_node_id": "part2_align",
+  "deviation_type": "spatial",
+  "severity": "warning",
+  "timestamp_sec": 43.25,
+  "confidence": 0.87,
+  "metrics": {
+    "offset_px": 27,
+    "motion_norm": 0.61
+  },
+  "evidence_refs": {
+    "keyframe_uri": "s3://assets/frame_4325.jpg",
+    "clip_uri": "s3://assets/clip_42_45.mp4"
+  }
+}</pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="section-title">协议矩阵</h2>
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>源</th>
+                <th>目标</th>
+                <th>主协议</th>
+                <th>备选</th>
+                <th>原因</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>摄像头 / 麦克风</td>
+                <td>capture-gateway</td>
+                <td>RTSP / UVC / USB / I2S</td>
+                <td>本地文件回放</td>
+                <td>现场接入必须兼容工业和服务机器人常见外设，调试期支持离线视频回放复现实验。</td>
+              </tr>
+              <tr>
+                <td>学生侧机器人控制器</td>
+                <td>capture-gateway</td>
+                <td>gRPC streaming</td>
+                <td>MQTT / Modbus-TCP</td>
+                <td>状态流需要强类型和低时延；具体协议可按机器人平台兼容，但语义对象必须统一。</td>
+              </tr>
+              <tr>
+                <td>边缘内部模块</td>
+                <td>边缘内部模块</td>
+                <td>进程内 <code>asyncio.Queue</code> + Pydantic DTO</td>
+                <td>本地 JSONL 落盘</td>
+                <td>方案书强调结构化 JSON 事件流；本地同时保留 JSONL 有利于复盘与断网补传。</td>
+              </tr>
+              <tr>
+                <td>uplink-agent</td>
+                <td>supervision-ingest-api</td>
+                <td>MQTT 5.0/TLS（事件） + HTTPS（媒体）</td>
+                <td>HTTP batch</td>
+                <td>事件与媒体分流：事件讲时效和轻量，媒体讲可靠和大对象上传。</td>
+              </tr>
+              <tr>
+                <td>guidance-orchestrator</td>
+                <td>云端 VLM</td>
+                <td>HTTPS JSON</td>
+                <td>厂商 SDK</td>
+                <td>多模态模型供应商差异较大，统一成 JSON adapter 最利于后续切换云端服务。</td>
+              </tr>
+              <tr>
+                <td>realtime-session-hub</td>
+                <td>教师工作站</td>
+                <td>SSE</td>
+                <td>WebSocket</td>
+                <td>当前原型已使用 <code>EventSource</code> 跑通一对多状态流，v1 先用简单稳定的一向流模式。</td>
+              </tr>
+              <tr>
+                <td>asset-service</td>
+                <td>媒体 / 向量 / 元数据存储</td>
+                <td>S3 API + PostgreSQL + Qdrant</td>
+                <td>本地文件系统</td>
+                <td>不同数据形态分仓存储：关系数据、媒体对象、语义向量各走最适合的底座。</td>
+              </tr>
+              <tr>
+                <td>教师工作站</td>
+                <td>机器人复位接口</td>
+                <td>REST → MQTT / gRPC 桥</td>
+                <td>人工线下复位</td>
+                <td>教师系统只做审计可追踪的指导与复位，不扩展成高风险的实时运动控制面。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="section card">
+      <h2 class="section-title">推荐目录映射</h2>
+      <p class="section-desc">
+        下面这版目录映射专门为当前五仓库骨架准备，目的是让后续代码能顺着这张图直接落到目录，而不是继续堆在 README 或单文件脚本里。
+      </p>
+      <div class="repo-grid">
+        <article class="repo-card">
+          <h3>shared-models-and-apis</h3>
+          <ul>
+            <li><code>openapi/supervision-api.yaml</code></li>
+            <li><code>schemas/events/*.schema.json</code></li>
+            <li><code>proto/robot_state.proto</code></li>
+            <li><code>examples/sop/*.yaml</code></li>
+          </ul>
+        </article>
+        <article class="repo-card">
+          <h3>edge-client-sdk</h3>
+          <ul>
+            <li><code>src/edge/capture/</code></li>
+            <li><code>src/edge/context/</code></li>
+            <li><code>src/edge/supervisor/</code></li>
+            <li><code>src/edge/uplink/</code></li>
+          </ul>
+        </article>
+        <article class="repo-card">
+          <h3>backend-api-service</h3>
+          <ul>
+            <li><code>src/api/ingest/</code></li>
+            <li><code>src/api/realtime/</code></li>
+            <li><code>src/api/guidance/</code></li>
+            <li><code>src/api/assets/</code></li>
+          </ul>
+        </article>
+        <article class="repo-card">
+          <h3>data-access-layer</h3>
+          <ul>
+            <li><code>src/data/postgres/</code></li>
+            <li><code>src/data/object_store/</code></li>
+            <li><code>src/data/vector_store/</code></li>
+            <li><code>src/data/cache/</code></li>
+          </ul>
+        </article>
+        <article class="repo-card">
+          <h3>frontend-web-app</h3>
+          <ul>
+            <li><code>src/pages/live/</code></li>
+            <li><code>src/pages/replay/</code></li>
+            <li><code>src/pages/assets/</code></li>
+            <li><code>src/lib/api/</code></li>
+          </ul>
+        </article>
+      </div>
+      <p class="footer-note">
+        推荐开发顺序也应与这个目录顺序一致：先做 <code>shared-models-and-apis</code> 的对象与事件定义，再实现边缘监督，再接入控制面与数据层，最后做教师工作站和资产展示。
+        如果反过来先写前端页面或先堆后端接口，很容易再次出现字段漂移与模块边界塌陷。
+      </p>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const board = document.getElementById("architecture-board");
+      const svg = document.getElementById("connection-layer");
+      const labelLayer = document.getElementById("label-layer");
+      const resetButton = document.getElementById("diagram-reset");
+      const hiddenList = document.getElementById("hidden-module-list");
+      const showAllButton = document.getElementById("diagram-show-all");
+      if (!board || !svg || !labelLayer) return;
+
+      const rootStyle = getComputedStyle(document.documentElement);
+      const colors = {
+        default: "#7b6a57",
+        contract: rootStyle.getPropertyValue("--slate").trim() || "#395269",
+        edge: rootStyle.getPropertyValue("--gold").trim() || "#c28b2c",
+        backend: rootStyle.getPropertyValue("--teal").trim() || "#267c77",
+        cloud: rootStyle.getPropertyValue("--rust").trim() || "#b1592d",
+        data: rootStyle.getPropertyValue("--moss").trim() || "#43634f",
+      };
+
+      const connections = [
+        { from: "contracts", to: "edge-capture", label: "DTO / Schema", protocol: "OpenAPI + JSON Schema", color: colors.contract },
+        { from: "contracts", to: "backend-ingest", label: "Session / Event DTO", protocol: "OpenAPI contract", color: colors.contract },
+        { from: "contracts", to: "front", label: "TS types / API models", protocol: "openapi-typescript", color: colors.contract },
+        { from: "contracts", to: "data", label: "Repository payload model", protocol: "Schema alignment", color: colors.contract },
+        { from: "input", to: "edge-capture", label: "RTSP / UVC / I2S", protocol: "stream ingest", color: colors.default },
+        { from: "student", to: "edge-capture", label: "RobotState.Subscribe()", protocol: "gRPC / MQTT", color: colors.default },
+        { from: "edge-capture", to: "edge-context", label: "emitFrameEnvelope()", protocol: "local event", color: colors.edge },
+        { from: "edge-context", to: "edge-supervisor", label: "publish TaskContextFrame", protocol: "local DTO", color: colors.edge },
+        { from: "edge-supervisor", to: "edge-uplink", label: "DeviationEvent batch", protocol: "JSON event stream", color: colors.edge },
+        { from: "edge-uplink", to: "backend-ingest", label: "POST /sessions /edge-events:batch /media", protocol: "MQTT + HTTPS", color: colors.edge },
+        { from: "backend-ingest", to: "backend-guidance", label: "enqueue GuidanceRequest", protocol: "Redis Streams", color: colors.backend },
+        { from: "backend-ingest", to: "backend-realtime", label: "session state update", protocol: "Pub/Sub", color: colors.backend },
+        { from: "backend-guidance", to: "cloud", label: "POST /guidance/advise", protocol: "HTTPS JSON", color: colors.cloud },
+        { from: "backend-guidance", to: "data", label: "EmbeddingRepository.search()", protocol: "Qdrant", color: colors.backend },
+        { from: "backend-ingest", to: "data", label: "SessionRepository.upsert()", protocol: "SQL / S3", color: colors.backend },
+        { from: "backend-realtime", to: "data", label: "read session / alert state", protocol: "SQL + Redis", color: colors.backend },
+        { from: "backend-asset", to: "data", label: "TeachingCard + media export", protocol: "SQL + S3 + Qdrant", color: colors.backend },
+        { from: "backend-realtime", to: "front", label: "GET /sessions/{id}/stream", protocol: "SSE", color: colors.backend },
+        { from: "backend-asset", to: "front", label: "POST /search/semantic", protocol: "REST JSON", color: colors.backend },
+        { from: "front", to: "backend-realtime", label: "POST /interventions", protocol: "REST JSON", color: colors.cloud },
+        { from: "backend-realtime", to: "edge-uplink", label: "embodied/.../guidance", protocol: "MQTT command", color: colors.cloud },
+      ];
+
+      const nodes = Array.from(board.querySelectorAll(".module-node"));
+      let activeDrag = null;
+      let zCounter = 10;
+
+      function getNodeTitle(node) {
+        return node.querySelector(".module-title")?.textContent?.trim() || node.dataset.id || "unknown";
+      }
+
+      function isNodeHidden(node) {
+        return node.classList.contains("is-hidden");
+      }
+
+      function setupNodeChrome() {
+        nodes.forEach((node) => {
+          const title = node.querySelector(".module-title");
+          if (!title) return;
+          if (node.querySelector(".module-hide-button")) return;
+          const top = document.createElement("div");
+          top.className = "module-node-top";
+          title.parentNode.insertBefore(top, title);
+          top.appendChild(title);
+          const hideButton = document.createElement("button");
+          hideButton.type = "button";
+          hideButton.className = "module-hide-button";
+          hideButton.textContent = "隐藏";
+          hideButton.addEventListener("pointerdown", (event) => {
+            event.stopPropagation();
+          });
+          hideButton.addEventListener("mousedown", (event) => {
+            event.stopPropagation();
+          });
+          hideButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            hideNode(node.dataset.id);
+          });
+          top.appendChild(hideButton);
+        });
+      }
+
+      function ensureDefaults() {
+        nodes.forEach((node) => {
+          if (!node.dataset.defaultLeft) node.dataset.defaultLeft = node.style.left || "0px";
+          if (!node.dataset.defaultTop) node.dataset.defaultTop = node.style.top || "0px";
+        });
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function getNodeRect(node) {
+        const boardRect = board.getBoundingClientRect();
+        const rect = node.getBoundingClientRect();
+        return {
+          left: rect.left - boardRect.left,
+          top: rect.top - boardRect.top,
+          right: rect.right - boardRect.left,
+          bottom: rect.bottom - boardRect.top,
+          width: rect.width,
+          height: rect.height,
+          cx: rect.left - boardRect.left + rect.width / 2,
+          cy: rect.top - boardRect.top + rect.height / 2,
+        };
+      }
+
+      function getAnchors(fromRect, toRect) {
+        const dx = toRect.cx - fromRect.cx;
+        const dy = toRect.cy - fromRect.cy;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx >= 0) {
+            return {
+              start: { x: fromRect.right, y: fromRect.cy },
+              end: { x: toRect.left, y: toRect.cy },
+            };
+          }
+          return {
+            start: { x: fromRect.left, y: fromRect.cy },
+            end: { x: toRect.right, y: toRect.cy },
+          };
+        }
+
+        if (dy >= 0) {
+          return {
+            start: { x: fromRect.cx, y: fromRect.bottom },
+            end: { x: toRect.cx, y: toRect.top },
+          };
+        }
+
+        return {
+          start: { x: fromRect.cx, y: fromRect.top },
+          end: { x: toRect.cx, y: toRect.bottom },
+        };
+      }
+
+      function buildPath(start, end) {
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const c1 = {
+          x: start.x + (Math.abs(dx) > Math.abs(dy) ? dx * 0.45 : 0),
+          y: start.y + (Math.abs(dx) > Math.abs(dy) ? 0 : dy * 0.45),
+        };
+        const c2 = {
+          x: end.x - (Math.abs(dx) > Math.abs(dy) ? dx * 0.45 : 0),
+          y: end.y - (Math.abs(dx) > Math.abs(dy) ? 0 : dy * 0.45),
+        };
+        return `M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${end.x} ${end.y}`;
+      }
+
+      function addMarkers() {
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+        marker.setAttribute("id", "diagram-arrow");
+        marker.setAttribute("markerWidth", "12");
+        marker.setAttribute("markerHeight", "12");
+        marker.setAttribute("refX", "10");
+        marker.setAttribute("refY", "6");
+        marker.setAttribute("orient", "auto");
+        marker.setAttribute("markerUnits", "strokeWidth");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "M 0 0 L 12 6 L 0 12 z");
+        path.setAttribute("fill", "#7b6a57");
+        marker.appendChild(path);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+      }
+
+      function renderConnections() {
+        const width = board.clientWidth;
+        const height = board.clientHeight;
+        svg.innerHTML = "";
+        labelLayer.innerHTML = "";
+        svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        addMarkers();
+
+        connections.forEach((connection) => {
+          const fromNode = board.querySelector(`[data-id="${connection.from}"]`);
+          const toNode = board.querySelector(`[data-id="${connection.to}"]`);
+          if (!fromNode || !toNode || isNodeHidden(fromNode) || isNodeHidden(toNode)) return;
+          const fromRect = getNodeRect(fromNode);
+          const toRect = getNodeRect(toNode);
+          const { start, end } = getAnchors(fromRect, toRect);
+          const d = buildPath(start, end);
+
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", d);
+          path.setAttribute("fill", "none");
+          path.setAttribute("stroke", connection.color);
+          path.setAttribute("stroke-width", "3.5");
+          path.setAttribute("stroke-linecap", "round");
+          path.setAttribute("marker-end", "url(#diagram-arrow)");
+          svg.appendChild(path);
+
+          const label = document.createElement("div");
+          label.className = "connector-label";
+          label.innerHTML = `<strong>${connection.label}</strong><span>${connection.protocol}</span>`;
+          const labelX = start.x + (end.x - start.x) * 0.5;
+          const labelY = start.y + (end.y - start.y) * 0.5;
+          label.style.left = `${labelX}px`;
+          label.style.top = `${labelY}px`;
+          labelLayer.appendChild(label);
+        });
+      }
+
+      function renderHiddenModules() {
+        if (!hiddenList) return;
+        const hiddenNodes = nodes.filter(isNodeHidden);
+        hiddenList.innerHTML = "";
+        if (!hiddenNodes.length) {
+          const empty = document.createElement("span");
+          empty.className = "hidden-module-empty";
+          empty.textContent = "当前无隐藏模块";
+          hiddenList.appendChild(empty);
+          return;
+        }
+
+        hiddenNodes.forEach((node) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "hidden-module-chip";
+          button.textContent = `显示 ${getNodeTitle(node)}`;
+          button.addEventListener("click", () => showNode(node.dataset.id));
+          hiddenList.appendChild(button);
+        });
+      }
+
+      function hideNode(nodeId) {
+        const node = board.querySelector(`[data-id="${nodeId}"]`);
+        if (!node || isNodeHidden(node)) return;
+        node.classList.add("is-hidden");
+        renderHiddenModules();
+        renderConnections();
+      }
+
+      function showNode(nodeId) {
+        const node = board.querySelector(`[data-id="${nodeId}"]`);
+        if (!node) return;
+        node.classList.remove("is-hidden");
+        zCounter += 1;
+        node.style.zIndex = zCounter;
+        renderHiddenModules();
+        renderConnections();
+      }
+
+      function startDrag(event) {
+        const node = event.currentTarget;
+        if (isNodeHidden(node)) return;
+        if (event.target && event.target.closest(".module-hide-button")) return;
+        const boardRect = board.getBoundingClientRect();
+        const nodeRect = node.getBoundingClientRect();
+        activeDrag = {
+          node,
+          offsetX: event.clientX - nodeRect.left,
+          offsetY: event.clientY - nodeRect.top,
+        };
+        zCounter += 1;
+        node.style.zIndex = zCounter;
+        if (node.setPointerCapture) node.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      }
+
+      function onPointerMove(event) {
+        if (!activeDrag) return;
+        const { node, offsetX, offsetY } = activeDrag;
+        const boardRect = board.getBoundingClientRect();
+        const maxLeft = board.clientWidth - node.offsetWidth;
+        const maxTop = board.clientHeight - node.offsetHeight;
+        const left = clamp(event.clientX - boardRect.left - offsetX, 6, maxLeft - 6);
+        const top = clamp(event.clientY - boardRect.top - offsetY, 6, maxTop - 6);
+        node.style.left = `${left}px`;
+        node.style.top = `${top}px`;
+        renderConnections();
+      }
+
+      function endDrag(event) {
+        if (!activeDrag) return;
+        if (activeDrag.node.releasePointerCapture) {
+          try {
+            activeDrag.node.releasePointerCapture(event.pointerId);
+          } catch (_) {}
+        }
+        activeDrag = null;
+      }
+
+      ensureDefaults();
+      setupNodeChrome();
+      nodes.forEach((node) => node.addEventListener("pointerdown", startDrag));
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", endDrag);
+      window.addEventListener("resize", renderConnections);
+
+      if (resetButton) {
+        resetButton.addEventListener("click", () => {
+          nodes.forEach((node) => {
+            node.style.left = node.dataset.defaultLeft;
+            node.style.top = node.dataset.defaultTop;
+          });
+          renderConnections();
+        });
+      }
+
+      if (showAllButton) {
+        showAllButton.addEventListener("click", () => {
+          nodes.forEach((node) => node.classList.remove("is-hidden"));
+          renderHiddenModules();
+          renderConnections();
+        });
+      }
+
+      renderHiddenModules();
+      renderConnections();
+    })();
+  </script>
+</body>
+</html>
