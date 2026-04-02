@@ -65,6 +65,8 @@ edge-client-sdk/
 - 下行命令 topic：
   - `embodied/{siteId}/{robotId}/guidance`
   - `embodied/{siteId}/{robotId}/command`
+- 机械臂参数包获取：
+  - `GET /api/v1/sessions/{id}/robot-parameter-inputs/latest`
 
 ## 直接上游 / 下游
 

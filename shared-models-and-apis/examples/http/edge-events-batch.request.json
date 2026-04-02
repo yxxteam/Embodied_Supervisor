@@ -1,0 +1,111 @@
+{
+  "events": [
+    {
+      "event_type": "task_context_frame",
+      "event_id": "evt_ctx_0001",
+      "produced_at": "2026-03-27T09:30:15Z",
+      "payload": {
+        "frame_id": "frame_20260327_0001842",
+        "session_id": "sess_20260327_001",
+        "site_id": "lab-a",
+        "robot_id": "dual-arm-station-01",
+        "stream_id": "camera-top",
+        "timestamp": "2026-03-27T09:30:15Z",
+        "frame_index": 1842,
+        "state": "supervising",
+        "message": "Cycle 1 alignment is in progress.",
+        "progress": 0.42,
+        "current_task_node_id": "cycle1_align_part_a",
+        "current_task_node_title": "Cycle 1 Align Part A",
+        "next_task_node_id": "cycle1_place_part_a",
+        "next_task_node_title": "Cycle 1 Place Part A",
+        "task_status": "partial",
+        "metrics": {
+          "motion_norm": 0.38,
+          "center_focus": 0.81
+        },
+        "media_object_ids": [
+          "media_frame_001"
+        ]
+      }
+    },
+    {
+      "event_type": "task_node_progress",
+      "event_id": "evt_progress_cycle1_align_part_a",
+      "produced_at": "2026-03-27T09:31:10Z",
+      "payload": {
+        "event_id": "evt_progress_cycle1_align_part_a",
+        "session_id": "sess_20260327_001",
+        "task_node_id": "cycle1_align_part_a",
+        "title": "Cycle 1 Align Part A",
+        "module_title": "02 Cycle 1 Align Part A",
+        "module_summary": "The arm pair moves the part into the center alignment zone.",
+        "cycle_id": 1,
+        "event_kind": "align",
+        "status": "completed",
+        "expected_objects": [
+          "part_a",
+          "fixture_a"
+        ],
+        "matched_objects": [
+          "part_a",
+          "fixture_a"
+        ],
+        "missing_objects": [],
+        "start_sec": 36.0,
+        "end_sec": 43.0,
+        "duration_sec": 7.0,
+        "match_score": 0.91,
+        "hit_windows": 7,
+        "evidence_frames": [
+          1894,
+          1912,
+          1940
+        ],
+        "evidence_timestamps_sec": [
+          36.2,
+          38.0,
+          41.5
+        ],
+        "summary_metrics": {
+          "motion_norm": 0.41,
+          "center_focus": 0.84
+        },
+        "media_object_ids": [
+          "media_clip_cycle1_align_part_a"
+        ],
+        "notes": "Fixed-window supervision completed with strong center alignment evidence.",
+        "observed_at": "2026-03-27T09:31:10Z"
+      }
+    },
+    {
+      "event_type": "deviation_event",
+      "event_id": "evt_deviation_cycle1_final_place",
+      "produced_at": "2026-03-27T09:35:41Z",
+      "payload": {
+        "event_id": "evt_deviation_cycle1_final_place",
+        "session_id": "sess_20260327_001",
+        "task_node_id": "cycle1_final_placement",
+        "deviation_type": "placement_error",
+        "severity": "warning",
+        "summary": "Final placement failed the left-right validation rule.",
+        "description": "Both finished parts remained on the left side after the final placement step.",
+        "confidence": 0.94,
+        "recommended_action": "Replay the final segment and issue a reset before the next cycle.",
+        "related_event_ids": [
+          "evt_progress_cycle1_final_place"
+        ],
+        "media_object_ids": [
+          "media_frame_failure_001",
+          "media_clip_placement_failure"
+        ],
+        "metrics": {
+          "left_count": 2,
+          "right_count": 0,
+          "motion_norm": 0.08
+        },
+        "observed_at": "2026-03-27T09:35:41Z"
+      }
+    }
+  ]
+}

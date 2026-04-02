@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SearchHit",
+  "description": "Semantic retrieval result for supervision assets and events.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "hit_id",
+    "source_type",
+    "source_id",
+    "score",
+    "title"
+  ],
+  "properties": {
+    "hit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "teaching_card",
+        "deviation_event",
+        "task_progress",
+        "media_object"
+      ]
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "score": {
+      "type": "number",
+      "minimum": 0
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snippet": {
+      "type": "string"
+    },
+    "highlights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "media_object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "examples": [
+    {
+      "hit_id": "hit_001",
+      "session_id": "sess_20260327_001",
+      "source_type": "teaching_card",
+      "source_id": "card_assembly_left_right_001",
+      "score": 0.92,
+      "title": "Final placement deviation case",
+      "snippet": "Both finished parts were placed on the same side of the workbench.",
+      "highlights": [
+        "same side",
+        "final placement"
+      ],
+      "media_object_ids": [
+        "media_clip_placement_failure"
+      ],
+      "tags": [
+        "placement",
+        "deviation"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "session_id": "sess_20260327_001",
+  "source_event_ids": [
+    "evt_progress_cycle1_final_place",
+    "evt_deviation_cycle1_final_place"
+  ],
+  "card_type": "deviation_case",
+  "preferred_language": "zh-CN",
+  "include_media": true
+}

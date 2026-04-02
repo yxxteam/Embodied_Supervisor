@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RobotParameterInput",
+  "description": "Normalized robot-side parameter input used to generate a Talon arm control packet.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "command_kind",
+    "operator_id",
+    "reason"
+  ],
+  "properties": {
+    "command_kind": {
+      "type": "string",
+      "enum": [
+        "execute_action",
+        "set_joint_position",
+        "set_claw_motion",
+        "set_joint_enable"
+      ]
+    },
+    "operator_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "action_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "reset",
+        "extend",
+        "contract",
+        "place",
+        "custom",
+        null
+      ]
+    },
+    "joint_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "joint_1",
+        "joint_2",
+        "joint_3",
+        "joint_4",
+        "joint_5",
+        "joint_6",
+        "all",
+        null
+      ]
+    },
+    "position_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "position_unit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "deg",
+        "rad",
+        "cm",
+        null
+      ]
+    },
+    "claw_x": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "claw_y": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "claw_unit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "rad",
+        null
+      ]
+    },
+    "enabled": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "command_kind": "execute_action",
+      "operator_id": "teacher-console-01",
+      "reason": "Cycle 1 final placement failed and the arm should return to reset pose.",
+      "source_event_ids": [
+        "evt_deviation_cycle1_final_place"
+      ],
+      "action_name": "reset"
+    },
+    {
+      "command_kind": "set_joint_position",
+      "operator_id": "teacher-console-01",
+      "reason": "Open the claw before the next pickup attempt.",
+      "joint_name": "joint_6",
+      "position_value": 9.0,
+      "position_unit": "cm"
+    }
+  ]
+}

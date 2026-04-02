@@ -1,0 +1,25 @@
+{
+  "query": "final placement failure on the same side",
+  "hits": [
+    {
+      "hit_id": "hit_001",
+      "session_id": "sess_20260327_001",
+      "source_type": "teaching_card",
+      "source_id": "card_assembly_left_right_001",
+      "score": 0.92,
+      "title": "Final placement deviation case",
+      "snippet": "Both finished parts were placed on the same side of the workbench.",
+      "highlights": [
+        "same side",
+        "final placement"
+      ],
+      "media_object_ids": [
+        "media_clip_placement_failure"
+      ],
+      "tags": [
+        "placement",
+        "deviation"
+      ]
+    }
+  ]
+}

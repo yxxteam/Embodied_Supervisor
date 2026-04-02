@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskContextFrame",
+  "description": "Synchronized edge-side context snapshot for a running supervision session.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "frame_id",
+    "session_id",
+    "site_id",
+    "robot_id",
+    "timestamp",
+    "frame_index",
+    "state",
+    "progress",
+    "metrics"
+  ],
+  "properties": {
+    "frame_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "site_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "robot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stream_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "frame_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "message": {
+      "type": "string"
+    },
+    "progress": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "current_task_node_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "current_task_node_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "next_task_node_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "next_task_node_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "task_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "completed",
+        "partial",
+        "missing",
+        null
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "media_object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "examples": [
+    {
+      "frame_id": "frame_20260327_0001842",
+      "session_id": "sess_20260327_001",
+      "site_id": "lab-a",
+      "robot_id": "dual-arm-station-01",
+      "stream_id": "camera-top",
+      "timestamp": "2026-03-27T09:30:15Z",
+      "frame_index": 1842,
+      "state": "supervising",
+      "message": "Cycle 1 alignment is in progress.",
+      "progress": 0.42,
+      "current_task_node_id": "cycle1_align_part_a",
+      "current_task_node_title": "Cycle 1 Align Part A",
+      "next_task_node_id": "cycle1_place_part_a",
+      "next_task_node_title": "Cycle 1 Place Part A",
+      "task_status": "partial",
+      "metrics": {
+        "motion_norm": 0.38,
+        "center_focus": 0.81
+      },
+      "media_object_ids": [
+        "media_frame_001"
+      ]
+    }
+  ]
+}

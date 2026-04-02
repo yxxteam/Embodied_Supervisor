@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TeachingCard",
+  "description": "Structured teaching asset generated from a supervision session.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "card_id",
+    "session_id",
+    "type",
+    "title",
+    "summary",
+    "generated_at"
+  ],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "normal_flow",
+        "deviation_case",
+        "intervention_case"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "media_object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "heading",
+          "body"
+        ],
+        "properties": {
+          "heading": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "default": []
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "examples": [
+    {
+      "card_id": "card_assembly_left_right_001",
+      "session_id": "sess_20260327_001",
+      "type": "deviation_case",
+      "title": "Final placement deviation case",
+      "summary": "Two assembled parts were placed on the same side of the workbench.",
+      "generated_at": "2026-03-27T09:40:00Z",
+      "source_event_ids": [
+        "evt_progress_cycle1_final_place",
+        "evt_deviation_cycle1_final_place"
+      ],
+      "media_object_ids": [
+        "media_clip_placement_failure",
+        "media_frame_failure_001"
+      ],
+      "keywords": [
+        "placement",
+        "deviation",
+        "dual-arm"
+      ],
+      "sections": [
+        {
+          "heading": "Observed issue",
+          "body": "The final placement step completed, but both finished parts stayed on the left side."
+        },
+        {
+          "heading": "Recommended coaching",
+          "body": "Replay the final placement segment and ask the operator to verify left-right target zones before release."
+        }
+      ],
+      "tags": [
+        "lab-a",
+        "cycle-1"
+      ]
+    }
+  ]
+}

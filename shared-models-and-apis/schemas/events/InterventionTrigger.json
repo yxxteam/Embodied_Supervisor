@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InterventionTrigger",
+  "description": "Trigger that requests human or remote intervention from the teacher-side control plane.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trigger_id",
+    "session_id",
+    "trigger_type",
+    "reason",
+    "severity",
+    "created_at"
+  ],
+  "properties": {
+    "trigger_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "manual_review",
+        "teacher_takeover",
+        "remote_reset",
+        "safety_pause"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "warning",
+        "critical"
+      ]
+    },
+    "target_scope": {
+      "type": "string",
+      "enum": [
+        "teacher_console",
+        "edge_robot"
+      ]
+    },
+    "source_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "acknowledgement_required": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "examples": [
+    {
+      "trigger_id": "trg_remote_reset_cycle1_001",
+      "session_id": "sess_20260327_001",
+      "trigger_type": "remote_reset",
+      "reason": "Final placement deviation repeated and requires a clean reset before continuing.",
+      "severity": "warning",
+      "target_scope": "edge_robot",
+      "source_event_ids": [
+        "evt_deviation_cycle1_final_place"
+      ],
+      "acknowledgement_required": true,
+      "created_at": "2026-03-27T09:36:12Z"
+    }
+  ]
+}

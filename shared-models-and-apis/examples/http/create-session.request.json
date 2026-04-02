@@ -1,0 +1,11 @@
+{
+  "site_id": "lab-a",
+  "robot_id": "dual-arm-station-01",
+  "title": "Dual-arm assembly supervision",
+  "objective": "Track task progress, deviations, and teaching assets for a lab session.",
+  "sop_plan_id": "sop_dual_arm_assembly_v1",
+  "tags": [
+    "assembly",
+    "teaching-demo"
+  ]
+}

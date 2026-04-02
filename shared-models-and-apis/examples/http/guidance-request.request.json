@@ -1,0 +1,10 @@
+{
+  "source_event_ids": [
+    "evt_deviation_cycle1_final_place"
+  ],
+  "question": "How should the teacher intervene when the final placement fails the left-right validation?",
+  "context_note": "The next cycle should not start until the placement issue is reviewed.",
+  "preferred_language": "zh-CN",
+  "top_k": 3,
+  "include_media": true
+}

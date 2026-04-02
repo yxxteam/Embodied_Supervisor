@@ -1,0 +1,62 @@
+plan_id: sop_dual_arm_assembly_v1
+title: Dual-arm assembly supervision plan
+description: Supervise pickup, alignment, placement, and final validation for a dual-arm assembly station.
+robot_id: dual-arm-station-01
+version: 0.1.0
+steps:
+  - step_id: cycle1_pickup_part_a
+    title: Cycle 1 Pickup Part A
+    description: Lift the first part from the feeder tray.
+    order_index: 1
+    cycle_id: 1
+    event_kind: pickup
+    expected_objects:
+      - part_a
+      - gripper
+    entry_criteria:
+      - Arms are idle at the feeder station.
+    exit_criteria:
+      - Part A leaves the feeder tray.
+    target_duration_sec: 3
+  - step_id: cycle1_align_part_a
+    title: Cycle 1 Align Part A
+    description: Move the first part into the fixture alignment zone.
+    order_index: 2
+    cycle_id: 1
+    event_kind: align
+    expected_objects:
+      - part_a
+      - fixture_a
+    entry_criteria:
+      - Part A is held above the feeder tray.
+    exit_criteria:
+      - Part A is centered in the fixture alignment zone.
+    target_duration_sec: 7
+  - step_id: cycle1_place_part_a
+    title: Cycle 1 Place Part A
+    description: Insert and release the first part at the target zone.
+    order_index: 3
+    cycle_id: 1
+    event_kind: placement
+    expected_objects:
+      - part_a
+      - target_zone_left
+    entry_criteria:
+      - Alignment for Part A is complete.
+    exit_criteria:
+      - Part A is released inside the left target zone.
+    target_duration_sec: 5
+  - step_id: cycle1_final_validation
+    title: Cycle 1 Final Placement Validation
+    description: Confirm that the completed parts occupy the left and right target zones.
+    order_index: 4
+    cycle_id: 1
+    event_kind: validation
+    expected_objects:
+      - target_zone_left
+      - target_zone_right
+    entry_criteria:
+      - All placement steps for cycle 1 are finished.
+    exit_criteria:
+      - Left and right target zones each contain exactly one finished part.
+    target_duration_sec: 3

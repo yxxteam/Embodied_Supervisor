@@ -1,0 +1,9 @@
+{
+  "command": "remote_reset",
+  "reason": "Final placement deviation repeated and requires a clean reset before the next cycle.",
+  "operator_id": "teacher-console-01",
+  "source_event_ids": [
+    "evt_deviation_cycle1_final_place"
+  ],
+  "expires_at": "2026-03-27T09:50:00Z"
+}

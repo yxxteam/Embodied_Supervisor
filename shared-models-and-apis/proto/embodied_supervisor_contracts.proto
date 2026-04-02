@@ -1,0 +1,258 @@
+syntax = "proto3";
+
+package embodied.supervisor.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum TaskNodeStatus {
+  TASK_NODE_STATUS_UNSPECIFIED = 0;
+  TASK_NODE_STATUS_COMPLETED = 1;
+  TASK_NODE_STATUS_PARTIAL = 2;
+  TASK_NODE_STATUS_MISSING = 3;
+}
+
+enum DeviationSeverity {
+  DEVIATION_SEVERITY_UNSPECIFIED = 0;
+  DEVIATION_SEVERITY_INFO = 1;
+  DEVIATION_SEVERITY_WARNING = 2;
+  DEVIATION_SEVERITY_CRITICAL = 3;
+}
+
+enum EdgeEventType {
+  EDGE_EVENT_TYPE_UNSPECIFIED = 0;
+  EDGE_EVENT_TYPE_TASK_CONTEXT_FRAME = 1;
+  EDGE_EVENT_TYPE_TASK_NODE_PROGRESS = 2;
+  EDGE_EVENT_TYPE_DEVIATION_EVENT = 3;
+  EDGE_EVENT_TYPE_INTERVENTION_TRIGGER = 4;
+}
+
+enum InterventionTriggerType {
+  INTERVENTION_TRIGGER_TYPE_UNSPECIFIED = 0;
+  INTERVENTION_TRIGGER_TYPE_MANUAL_REVIEW = 1;
+  INTERVENTION_TRIGGER_TYPE_TEACHER_TAKEOVER = 2;
+  INTERVENTION_TRIGGER_TYPE_REMOTE_RESET = 3;
+  INTERVENTION_TRIGGER_TYPE_SAFETY_PAUSE = 4;
+}
+
+enum GuidanceSuggestionType {
+  GUIDANCE_SUGGESTION_TYPE_UNSPECIFIED = 0;
+  GUIDANCE_SUGGESTION_TYPE_INSTRUCTION = 1;
+  GUIDANCE_SUGGESTION_TYPE_WARNING = 2;
+  GUIDANCE_SUGGESTION_TYPE_RESET = 3;
+  GUIDANCE_SUGGESTION_TYPE_CHECKLIST = 4;
+  GUIDANCE_SUGGESTION_TYPE_REVIEW_CARD = 5;
+}
+
+enum GuidancePriority {
+  GUIDANCE_PRIORITY_UNSPECIFIED = 0;
+  GUIDANCE_PRIORITY_LOW = 1;
+  GUIDANCE_PRIORITY_MEDIUM = 2;
+  GUIDANCE_PRIORITY_HIGH = 3;
+  GUIDANCE_PRIORITY_CRITICAL = 4;
+}
+
+enum ArmCommandKind {
+  ARM_COMMAND_KIND_UNSPECIFIED = 0;
+  ARM_COMMAND_KIND_EXECUTE_ACTION = 1;
+  ARM_COMMAND_KIND_SET_JOINT_POSITION = 2;
+  ARM_COMMAND_KIND_SET_CLAW_MOTION = 3;
+  ARM_COMMAND_KIND_SET_JOINT_ENABLE = 4;
+}
+
+enum ArmActionName {
+  ARM_ACTION_NAME_UNSPECIFIED = 0;
+  ARM_ACTION_NAME_RESET = 1;
+  ARM_ACTION_NAME_EXTEND = 2;
+  ARM_ACTION_NAME_CONTRACT = 3;
+  ARM_ACTION_NAME_PLACE = 4;
+  ARM_ACTION_NAME_CUSTOM = 5;
+}
+
+enum ArmJointName {
+  ARM_JOINT_NAME_UNSPECIFIED = 0;
+  ARM_JOINT_NAME_JOINT_1 = 1;
+  ARM_JOINT_NAME_JOINT_2 = 2;
+  ARM_JOINT_NAME_JOINT_3 = 3;
+  ARM_JOINT_NAME_JOINT_4 = 4;
+  ARM_JOINT_NAME_JOINT_5 = 5;
+  ARM_JOINT_NAME_JOINT_6 = 6;
+  ARM_JOINT_NAME_ALL = 7;
+}
+
+enum ArmPositionUnit {
+  ARM_POSITION_UNIT_UNSPECIFIED = 0;
+  ARM_POSITION_UNIT_DEG = 1;
+  ARM_POSITION_UNIT_RAD = 2;
+  ARM_POSITION_UNIT_CM = 3;
+}
+
+message PlanStep {
+  string step_id = 1;
+  string title = 2;
+  string description = 3;
+  int32 order_index = 4;
+  optional int32 cycle_id = 5;
+  string event_kind = 6;
+  repeated string expected_objects = 7;
+  repeated string entry_criteria = 8;
+  repeated string exit_criteria = 9;
+  optional double target_duration_sec = 10;
+}
+
+message SopPlan {
+  string plan_id = 1;
+  string title = 2;
+  string description = 3;
+  string robot_id = 4;
+  string version = 5;
+  repeated PlanStep steps = 6;
+}
+
+message TaskContextFrame {
+  string frame_id = 1;
+  string session_id = 2;
+  string site_id = 3;
+  string robot_id = 4;
+  string stream_id = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  int64 frame_index = 7;
+  string state = 8;
+  string message = 9;
+  double progress = 10;
+  optional string current_task_node_id = 11;
+  optional string current_task_node_title = 12;
+  optional string next_task_node_id = 13;
+  optional string next_task_node_title = 14;
+  TaskNodeStatus task_status = 15;
+  map<string, double> metrics = 16;
+  repeated string media_object_ids = 17;
+}
+
+message TaskNodeProgress {
+  string event_id = 1;
+  string session_id = 2;
+  string task_node_id = 3;
+  string title = 4;
+  string module_title = 5;
+  string module_summary = 6;
+  optional int32 cycle_id = 7;
+  string event_kind = 8;
+  TaskNodeStatus status = 9;
+  repeated string expected_objects = 10;
+  repeated string matched_objects = 11;
+  repeated string missing_objects = 12;
+  optional double start_sec = 13;
+  optional double end_sec = 14;
+  double duration_sec = 15;
+  double match_score = 16;
+  int32 hit_windows = 17;
+  repeated int64 evidence_frames = 18;
+  repeated double evidence_timestamps_sec = 19;
+  map<string, double> summary_metrics = 20;
+  repeated string media_object_ids = 21;
+  string notes = 22;
+  google.protobuf.Timestamp observed_at = 23;
+}
+
+message DeviationEvent {
+  string event_id = 1;
+  string session_id = 2;
+  string task_node_id = 3;
+  string deviation_type = 4;
+  DeviationSeverity severity = 5;
+  string summary = 6;
+  string description = 7;
+  double confidence = 8;
+  string recommended_action = 9;
+  repeated string related_event_ids = 10;
+  repeated string media_object_ids = 11;
+  map<string, double> metrics = 12;
+  google.protobuf.Timestamp observed_at = 13;
+}
+
+message SuggestionAction {
+  string label = 1;
+  string command_type = 2;
+  string payload_json = 3;
+}
+
+message GuidanceSuggestion {
+  string suggestion_id = 1;
+  string session_id = 2;
+  repeated string source_event_ids = 3;
+  string target_scope = 4;
+  GuidanceSuggestionType suggestion_type = 5;
+  string title = 6;
+  string message = 7;
+  string rationale = 8;
+  GuidancePriority priority = 9;
+  repeated string linked_card_ids = 10;
+  repeated SuggestionAction actions = 11;
+  google.protobuf.Timestamp created_at = 12;
+  optional google.protobuf.Timestamp expires_at = 13;
+}
+
+message InterventionTrigger {
+  string trigger_id = 1;
+  string session_id = 2;
+  InterventionTriggerType trigger_type = 3;
+  string reason = 4;
+  DeviationSeverity severity = 5;
+  string target_scope = 6;
+  repeated string source_event_ids = 7;
+  bool acknowledgement_required = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message RobotParameterInput {
+  ArmCommandKind command_kind = 1;
+  string operator_id = 2;
+  string reason = 3;
+  repeated string source_event_ids = 4;
+  optional google.protobuf.Timestamp expires_at = 5;
+  optional ArmActionName action_name = 6;
+  optional ArmJointName joint_name = 7;
+  optional float position_value = 8;
+  optional ArmPositionUnit position_unit = 9;
+  optional float claw_x = 10;
+  optional float claw_y = 11;
+  optional ArmPositionUnit claw_unit = 12;
+  optional bool enabled = 13;
+}
+
+message ArmCommandPacket {
+  string packet_id = 1;
+  string session_id = 2;
+  string site_id = 3;
+  string robot_id = 4;
+  string status = 5;
+  ArmCommandKind command_kind = 6;
+  string protocol = 7;
+  uint32 packet_head = 8;
+  uint32 base_address = 9;
+  uint32 wire_address = 10;
+  string rw = 11;
+  uint32 frame_len = 12;
+  repeated uint32 data_bytes = 13;
+  uint32 checksum = 14;
+  repeated uint32 frame_bytes = 15;
+  string frame_hex = 16;
+  string target_topic = 17;
+  optional string expected_feedback = 18;
+  optional uint32 suggested_send_interval_ms = 19;
+  google.protobuf.Timestamp created_at = 20;
+  optional google.protobuf.Timestamp expires_at = 21;
+  RobotParameterInput input = 22;
+}
+
+message EdgeEventEnvelope {
+  EdgeEventType event_type = 1;
+  string event_id = 2;
+  google.protobuf.Timestamp produced_at = 3;
+  oneof payload {
+    TaskContextFrame task_context_frame = 4;
+    TaskNodeProgress task_node_progress = 5;
+    DeviationEvent deviation_event = 6;
+    InterventionTrigger intervention_trigger = 7;
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "command_kind": "execute_action",
+  "operator_id": "teacher-console-01",
+  "reason": "Cycle 1 final placement failed and the arm should return to reset pose.",
+  "source_event_ids": [
+    "evt_deviation_cycle1_final_place"
+  ],
+  "action_name": "reset"
+}

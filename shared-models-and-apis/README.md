@@ -33,7 +33,7 @@ shared-models-and-apis/
 - `schemas/events/`
   - `TaskNodeProgress`、`DeviationEvent`、`GuidanceSuggestion`、`InterventionTrigger`。
 - `schemas/entities/`
-  - `Session`、`TeachingCard`、`MediaObject`、`SearchHit` 等实体。
+  - `Session`、`SopPlan`、`PlanStep`、`TaskContextFrame`、`TeachingCard`、`MediaObject`、`SearchHit` 等实体。
 - `proto/`
   - 边缘与机器人状态流的强类型消息。
 - `examples/sop/`
@@ -43,13 +43,32 @@ shared-models-and-apis/
 
 ## 当前最值得先定义的对象
 
+- `SopPlan`
+- `PlanStep`
 - `TaskContextFrame`
 - `TaskNodeProgress`
 - `DeviationEvent`
 - `GuidanceSuggestion`
+- `RobotParameterInput`
+- `ArmCommandPacket`
 - `TeachingCard`
 - `MediaObject`
 - `SearchHit`
+
+## 首批已落地文件
+
+- `openapi/control-plane.v1.json`
+  - 覆盖 `sessions`、`edge-events:batch`、`media`、`guidance-requests`、`stream`、`interventions`、`teaching-cards`、`search`。
+- `schemas/entities/*.json`
+  - 首批包含 `Session`、`SopPlan`、`PlanStep`、`TaskContextFrame`、`RobotParameterInput`、`ArmCommandPacket`、`TeachingCard`、`MediaObject`、`SearchHit`。
+- `schemas/events/*.json`
+  - 首批包含 `TaskNodeProgress`、`DeviationEvent`、`GuidanceSuggestion`、`InterventionTrigger`。
+- `proto/embodied_supervisor_contracts.proto`
+  - 为边缘上送与下行指导提供强类型消息定义。
+- `examples/sop/dual_arm_assembly.plan.yaml`
+  - 演示稳定版 `SopPlan/PlanStep` 配置。
+- `examples/http/*.json`
+  - 提供 `create-session`、`edge-events-batch`、`media-registration`、`guidance-request`、`intervention`、`robot-parameter-input`、`teaching-cards-generate`、`semantic-search` 的示例请求响应。
 
 ## 协作约束
 
@@ -63,10 +82,13 @@ shared-models-and-apis/
 
 - 契约目录骨架落地
 - 契约文件的目标分类明确
+- 首批 OpenAPI 落地
+- 首批事件 / 实体 Schema 落地
+- Proto 消息定义落地
+- 示例 SOP 与 HTTP 请求响应落地
 
 目前未完成：
 
-- 首批 OpenAPI
-- 首批事件 / 实体 Schema
-- Proto 消息定义
-- 示例请求响应
+- 语义化版本发布与变更日志流程
+- 契约自动校验 / codegen / breaking-change 检查
+- 按子仓实现进度继续补充更多接口与对象

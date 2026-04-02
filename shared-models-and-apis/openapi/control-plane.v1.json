@@ -1,0 +1,1077 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Embodied Supervisor Control Plane API",
+    "version": "0.1.0",
+    "description": "First-batch shared API contract for the Embodied Supervisor teacher-side control plane."
+  },
+  "servers": [
+    {
+      "url": "https://api.embodied-supervisor.example",
+      "description": "Placeholder control-plane base URL"
+    }
+  ],
+  "tags": [
+    {
+      "name": "sessions",
+      "description": "Session lifecycle and edge ingest APIs"
+    },
+    {
+      "name": "guidance",
+      "description": "Guidance generation and intervention APIs"
+    },
+    {
+      "name": "assets",
+      "description": "Teaching card and media asset APIs"
+    },
+    {
+      "name": "search",
+      "description": "Semantic retrieval APIs"
+    }
+  ],
+  "paths": {
+    "/api/v1/sessions": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Create a supervision session",
+        "operationId": "createSession",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get a session by id",
+        "operationId": "getSession",
+        "responses": {
+          "200": {
+            "description": "Session details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/edge-events:batch": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Ingest a batch of edge-produced events",
+        "operationId": "batchIngestEdgeEvents",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchEdgeEventsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch accepted for processing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchEdgeEventsAcceptedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/media": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Register media objects for a session",
+        "operationId": "registerMediaObjects",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Media objects registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/guidance-requests": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "guidance"
+        ],
+        "summary": "Create a guidance request from one or more source events",
+        "operationId": "createGuidanceRequest",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuidanceRequestCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Guidance request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidanceRequestAcceptedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/stream": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "guidance"
+        ],
+        "summary": "Subscribe to session realtime events using SSE",
+        "operationId": "streamSessionEvents",
+        "responses": {
+          "200": {
+            "description": "SSE stream of session events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "event: task_node_progress\ndata: {\"event_id\":\"evt_progress_cycle1_align_part_a\",\"session_id\":\"sess_20260327_001\"}\n\n"
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/interventions": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "guidance"
+        ],
+        "summary": "Issue a teacher-side intervention command",
+        "operationId": "createIntervention",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterventionCommandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Intervention command accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterventionCommandResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/robot-parameter-inputs": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "post": {
+        "tags": [
+          "guidance"
+        ],
+        "summary": "Create a robot parameter input and return a Talon arm control packet",
+        "operationId": "createRobotParameterPacket",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RobotParameterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Robot parameter packet created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArmCommandPacket"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/robot-parameter-inputs/latest": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/SessionId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "guidance"
+        ],
+        "summary": "Get the latest generated robot parameter packet for a session",
+        "operationId": "getLatestRobotParameterPacket",
+        "responses": {
+          "200": {
+            "description": "Latest robot parameter packet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArmCommandPacket"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/assets/teaching-cards:generate": {
+      "post": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "Generate teaching cards from a session or selected events",
+        "operationId": "generateTeachingCards",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeachingCardGenerateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generated teaching cards",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeachingCardGenerateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/api/v1/assets/teaching-cards": {
+      "get": {
+        "tags": [
+          "assets"
+        ],
+        "summary": "List teaching cards",
+        "operationId": "listTeachingCards",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teaching card list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeachingCardListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search/semantic": {
+      "post": {
+        "tags": [
+          "search"
+        ],
+        "summary": "Run semantic retrieval across supervision assets",
+        "operationId": "semanticSearch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SemanticSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SemanticSearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "SessionId": {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "schemas": {
+      "Session": {
+        "$ref": "../schemas/entities/Session.json"
+      },
+      "SopPlan": {
+        "$ref": "../schemas/entities/SopPlan.json"
+      },
+      "PlanStep": {
+        "$ref": "../schemas/entities/PlanStep.json"
+      },
+      "TaskContextFrame": {
+        "$ref": "../schemas/entities/TaskContextFrame.json"
+      },
+      "RobotParameterInput": {
+        "$ref": "../schemas/entities/RobotParameterInput.json"
+      },
+      "ArmCommandPacket": {
+        "$ref": "../schemas/entities/ArmCommandPacket.json"
+      },
+      "TeachingCard": {
+        "$ref": "../schemas/entities/TeachingCard.json"
+      },
+      "MediaObject": {
+        "$ref": "../schemas/entities/MediaObject.json"
+      },
+      "SearchHit": {
+        "$ref": "../schemas/entities/SearchHit.json"
+      },
+      "TaskNodeProgress": {
+        "$ref": "../schemas/events/TaskNodeProgress.json"
+      },
+      "DeviationEvent": {
+        "$ref": "../schemas/events/DeviationEvent.json"
+      },
+      "GuidanceSuggestion": {
+        "$ref": "../schemas/events/GuidanceSuggestion.json"
+      },
+      "InterventionTrigger": {
+        "$ref": "../schemas/events/InterventionTrigger.json"
+      },
+      "SessionCreateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "site_id",
+          "robot_id",
+          "title"
+        ],
+        "properties": {
+          "site_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "robot_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "objective": {
+            "type": "string"
+          },
+          "sop_plan_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sop_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SopPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        }
+      },
+      "EdgeEventEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event_type",
+          "event_id",
+          "produced_at",
+          "payload"
+        ],
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "enum": [
+              "task_context_frame",
+              "task_node_progress",
+              "deviation_event",
+              "intervention_trigger"
+            ]
+          },
+          "event_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "produced_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "payload": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TaskContextFrame"
+              },
+              {
+                "$ref": "#/components/schemas/TaskNodeProgress"
+              },
+              {
+                "$ref": "#/components/schemas/DeviationEvent"
+              },
+              {
+                "$ref": "#/components/schemas/InterventionTrigger"
+              }
+            ]
+          }
+        }
+      },
+      "BatchEdgeEventsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "events"
+        ],
+        "properties": {
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/EdgeEventEnvelope"
+            }
+          }
+        }
+      },
+      "BatchEdgeEventsAcceptedResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "session_id",
+          "accepted_count",
+          "rejected_count",
+          "received_at"
+        ],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "accepted_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rejected_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rejected_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        }
+      },
+      "MediaRegistrationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "purpose",
+                "content_type",
+                "filename"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "image",
+                    "video",
+                    "audio",
+                    "document",
+                    "archive"
+                  ]
+                },
+                "purpose": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "replay_clip",
+                    "teaching_asset",
+                    "upload_source"
+                  ]
+                },
+                "content_type": {
+                  "type": "string"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "byte_size": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "checksum_sha256": {
+                  "type": "string"
+                },
+                "start_offset_sec": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "end_offset_sec": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "MediaRegistrationResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaObject"
+            }
+          }
+        }
+      },
+      "GuidanceRequestCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_event_ids",
+          "question"
+        ],
+        "properties": {
+          "source_event_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "context_note": {
+            "type": "string"
+          },
+          "preferred_language": {
+            "type": "string",
+            "default": "zh-CN"
+          },
+          "top_k": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 3
+          },
+          "include_media": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "GuidanceRequestAcceptedResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "request_id",
+          "session_id",
+          "status",
+          "suggestions"
+        ],
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "completed"
+            ]
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuidanceSuggestion"
+            }
+          }
+        }
+      },
+      "InterventionCommandRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "command",
+          "reason",
+          "operator_id"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "enum": [
+              "pause_session",
+              "resume_session",
+              "remote_reset",
+              "manual_takeover"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operator_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "InterventionCommandResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "intervention_id",
+          "session_id",
+          "status",
+          "issued_at"
+        ],
+        "properties": {
+          "intervention_id": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sent",
+              "acknowledged"
+            ]
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TeachingCardGenerateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "session_id",
+          "card_type"
+        ],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "source_event_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "card_type": {
+            "type": "string",
+            "enum": [
+              "normal_flow",
+              "deviation_case",
+              "intervention_case"
+            ]
+          },
+          "preferred_language": {
+            "type": "string",
+            "default": "zh-CN"
+          },
+          "include_media": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "TeachingCardGenerateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeachingCard"
+            }
+          }
+        }
+      },
+      "TeachingCardListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeachingCard"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "SemanticSearchRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1
+          },
+          "session_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "teaching_card",
+                "deviation_event",
+                "task_progress",
+                "media_object"
+              ]
+            },
+            "default": []
+          },
+          "top_k": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 5
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        }
+      },
+      "SemanticSearchResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "query",
+          "hits"
+        ],
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "hits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchHit"
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Request validation failed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Requested resource was not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}

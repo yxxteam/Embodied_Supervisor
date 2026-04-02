@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Session",
+  "description": "Top-level supervision session tracked by the teacher-side control plane.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "session_id",
+    "site_id",
+    "robot_id",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "site_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "robot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "active",
+        "completed",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "sop_plan_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "started_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "examples": [
+    {
+      "session_id": "sess_20260327_001",
+      "site_id": "lab-a",
+      "robot_id": "dual-arm-station-01",
+      "status": "active",
+      "title": "Dual-arm assembly supervision",
+      "objective": "Track task progress, deviations, and teaching assets.",
+      "sop_plan_id": "sop_dual_arm_assembly_v1",
+      "started_at": "2026-03-27T09:28:00Z",
+      "ended_at": null,
+      "created_at": "2026-03-27T09:27:50Z",
+      "updated_at": "2026-03-27T09:30:15Z",
+      "tags": [
+        "demo",
+        "assembly"
+      ]
+    }
+  ]
+}

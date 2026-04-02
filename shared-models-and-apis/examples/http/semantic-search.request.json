@@ -1,0 +1,13 @@
+{
+  "query": "final placement failure on the same side",
+  "session_id": "sess_20260327_001",
+  "source_types": [
+    "teaching_card",
+    "deviation_event"
+  ],
+  "top_k": 5,
+  "tags": [
+    "placement",
+    "deviation"
+  ]
+}

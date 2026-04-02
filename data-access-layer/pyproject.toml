@@ -1,0 +1,22 @@
+[project]
+name = "data-access-layer"
+version = "0.1.0"
+description = "Local repository implementations for Embodied Supervisor."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "pydantic>=2.11.1",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.5",
+]
+
+[tool.uv]
+package = true
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SopPlan",
+  "description": "Teacher-side stable representation of an SOP or todo supervision plan.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "title",
+    "robot_id",
+    "steps"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "robot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "./PlanStep.json"
+      }
+    }
+  },
+  "examples": [
+    {
+      "plan_id": "sop_dual_arm_assembly_v1",
+      "title": "Dual-arm assembly supervision plan",
+      "description": "Track pickup, alignment, and final placement validation for each cycle.",
+      "robot_id": "dual-arm-station-01",
+      "version": "0.1.0",
+      "steps": [
+        {
+          "step_id": "cycle1_pickup_part_a",
+          "title": "Cycle 1 Pickup Part A",
+          "description": "Lift the first part from the feeder tray.",
+          "order_index": 1,
+          "cycle_id": 1,
+          "event_kind": "pickup",
+          "expected_objects": [
+            "part_a",
+            "gripper"
+          ],
+          "entry_criteria": [
+            "Arms are idle at the feeder station."
+          ],
+          "exit_criteria": [
+            "Part A leaves the feeder tray."
+          ],
+          "target_duration_sec": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "packet_id": "pkt_20260402_001",
+  "session_id": "sess_20260402_001",
+  "site_id": "lab-a",
+  "robot_id": "dual-arm-station-01",
+  "status": "ready",
+  "command_kind": "execute_action",
+  "protocol": "talon_usb_uart_v1",
+  "packet_head": 66,
+  "base_address": 9,
+  "wire_address": 9,
+  "rw": "write",
+  "frame_len": 5,
+  "data_bytes": [
+    1
+  ],
+  "checksum": 81,
+  "frame_bytes": [
+    66,
+    9,
+    5,
+    1,
+    81
+  ],
+  "frame_hex": "42 09 05 01 51",
+  "target_topic": "embodied/lab-a/dual-arm-station-01/command",
+  "expected_feedback": "action_complete_signal",
+  "suggested_send_interval_ms": null,
+  "created_at": "2026-04-02T10:20:00Z",
+  "expires_at": null,
+  "input": {
+    "command_kind": "execute_action",
+    "operator_id": "teacher-console-01",
+    "reason": "Cycle 1 final placement failed and the arm should return to reset pose.",
+    "source_event_ids": [
+      "evt_deviation_cycle1_final_place"
+    ],
+    "action_name": "reset"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlanStep",
+  "description": "A stable SOP step definition used by edge and cloud modules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "step_id",
+    "title",
+    "order_index"
+  ],
+  "properties": {
+    "step_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "order_index": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cycle_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "event_kind": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expected_objects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "entry_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "exit_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "target_duration_sec": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    }
+  },
+  "examples": [
+    {
+      "step_id": "cycle1_align_part_a",
+      "title": "Cycle 1 Align Part A",
+      "description": "Move the first part into the fixture alignment zone.",
+      "order_index": 2,
+      "cycle_id": 1,
+      "event_kind": "align",
+      "expected_objects": [
+        "part_a",
+        "fixture_a"
+      ],
+      "entry_criteria": [
+        "Part A has been picked up by the arm pair."
+      ],
+      "exit_criteria": [
+        "Part A is centered in the fixture alignment zone."
+      ],
+      "target_duration_sec": 7
+    }
+  ]
+}

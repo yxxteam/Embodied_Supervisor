@@ -1,0 +1,28 @@
+[project]
+name = "backend-api-service"
+version = "0.1.0"
+description = "FastAPI control-plane service for Embodied Supervisor."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "data-access-layer",
+  "fastapi>=0.116.1",
+  "uvicorn>=0.35.0",
+]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28.1",
+  "pytest>=8.3.5",
+]
+
+[tool.uv]
+package = true
+default-groups = ["dev"]
+
+[tool.uv.sources]
+data-access-layer = { path = "../data-access-layer", editable = true }
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,41 @@
+{
+  "request_id": "guide_req_20260327_001",
+  "session_id": "sess_20260327_001",
+  "status": "completed",
+  "suggestions": [
+    {
+      "suggestion_id": "guide_placement_fix_001",
+      "session_id": "sess_20260327_001",
+      "source_event_ids": [
+        "evt_deviation_cycle1_final_place"
+      ],
+      "target_scope": "teacher_console",
+      "suggestion_type": "review_card",
+      "title": "Review final placement before next cycle",
+      "message": "Show the placement failure card and ask the operator to confirm left-right target zones before release.",
+      "rationale": "The last cycle failed the final placement validation with high confidence.",
+      "priority": "high",
+      "linked_card_ids": [
+        "card_assembly_left_right_001"
+      ],
+      "actions": [
+        {
+          "label": "Open deviation card",
+          "command_type": "display_message",
+          "payload": {
+            "card_id": "card_assembly_left_right_001"
+          }
+        },
+        {
+          "label": "Request reset after review",
+          "command_type": "request_reset",
+          "payload": {
+            "target_scope": "edge_robot"
+          }
+        }
+      ],
+      "created_at": "2026-03-27T09:36:05Z",
+      "expires_at": null
+    }
+  ]
+}

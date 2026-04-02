@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArmCommandPacket",
+  "description": "Teacher-side returned Talon arm control packet generated from normalized robot parameter input.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packet_id",
+    "session_id",
+    "site_id",
+    "robot_id",
+    "status",
+    "command_kind",
+    "protocol",
+    "packet_head",
+    "base_address",
+    "wire_address",
+    "rw",
+    "frame_len",
+    "data_bytes",
+    "checksum",
+    "frame_bytes",
+    "frame_hex",
+    "target_topic",
+    "created_at",
+    "input"
+  ],
+  "properties": {
+    "packet_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "site_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "robot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "consumed",
+        "expired"
+      ]
+    },
+    "command_kind": {
+      "type": "string",
+      "enum": [
+        "execute_action",
+        "set_joint_position",
+        "set_claw_motion",
+        "set_joint_enable"
+      ]
+    },
+    "protocol": {
+      "type": "string",
+      "enum": [
+        "talon_usb_uart_v1"
+      ]
+    },
+    "packet_head": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "base_address": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "wire_address": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "rw": {
+      "type": "string",
+      "enum": [
+        "read",
+        "write"
+      ]
+    },
+    "frame_len": {
+      "type": "integer",
+      "minimum": 4
+    },
+    "data_bytes": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    },
+    "checksum": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "frame_bytes": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    },
+    "frame_hex": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_topic": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_feedback": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "suggested_send_interval_ms": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "input": {
+      "$ref": "./RobotParameterInput.json"
+    }
+  },
+  "examples": [
+    {
+      "packet_id": "pkt_20260402_001",
+      "session_id": "sess_20260402_001",
+      "site_id": "lab-a",
+      "robot_id": "dual-arm-station-01",
+      "status": "ready",
+      "command_kind": "execute_action",
+      "protocol": "talon_usb_uart_v1",
+      "packet_head": 66,
+      "base_address": 9,
+      "wire_address": 9,
+      "rw": "write",
+      "frame_len": 5,
+      "data_bytes": [
+        1
+      ],
+      "checksum": 81,
+      "frame_bytes": [
+        66,
+        9,
+        5,
+        1,
+        81
+      ],
+      "frame_hex": "42 09 05 01 51",
+      "target_topic": "embodied/lab-a/dual-arm-station-01/command",
+      "expected_feedback": "action_complete_signal",
+      "suggested_send_interval_ms": null,
+      "created_at": "2026-04-02T10:20:00Z",
+      "expires_at": null,
+      "input": {
+        "command_kind": "execute_action",
+        "operator_id": "teacher-console-01",
+        "reason": "Cycle 1 final placement failed and the arm should return to reset pose.",
+        "source_event_ids": [
+          "evt_deviation_cycle1_final_place"
+        ],
+        "action_name": "reset"
+      }
+    }
+  ]
+}

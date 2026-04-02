@@ -46,6 +46,8 @@ backend-api-service/
 - `POST /api/v1/sessions/{id}/guidance-requests`
 - `GET /api/v1/sessions/{id}/stream`
 - `POST /api/v1/sessions/{id}/interventions`
+- `POST /api/v1/sessions/{id}/robot-parameter-inputs`
+- `GET /api/v1/sessions/{id}/robot-parameter-inputs/latest`
 - `POST /api/v1/assets/teaching-cards:generate`
 - `GET /api/v1/assets/teaching-cards`
 - `POST /api/v1/search/semantic`

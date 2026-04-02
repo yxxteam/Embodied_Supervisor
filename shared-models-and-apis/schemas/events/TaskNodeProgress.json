@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskNodeProgress",
+  "description": "Progress event emitted by the edge supervisor for an SOP or todo task node.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "session_id",
+    "task_node_id",
+    "title",
+    "status",
+    "observed_at"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_node_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "module_title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "module_summary": {
+      "type": "string"
+    },
+    "cycle_id": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "event_kind": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "partial",
+        "missing"
+      ]
+    },
+    "expected_objects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "matched_objects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "missing_objects": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "start_sec": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "end_sec": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "duration_sec": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "match_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0
+    },
+    "hit_windows": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
+    },
+    "evidence_frames": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "default": []
+    },
+    "evidence_timestamps_sec": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0
+      },
+      "default": []
+    },
+    "summary_metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "default": {}
+    },
+    "media_object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "notes": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "examples": [
+    {
+      "event_id": "evt_progress_cycle1_align_part_a",
+      "session_id": "sess_20260327_001",
+      "task_node_id": "cycle1_align_part_a",
+      "title": "Cycle 1 Align Part A",
+      "module_title": "02 Cycle 1 Align Part A",
+      "module_summary": "The arm pair moves the part into the center alignment zone.",
+      "cycle_id": 1,
+      "event_kind": "align",
+      "status": "completed",
+      "expected_objects": [
+        "part_a",
+        "fixture_a"
+      ],
+      "matched_objects": [
+        "part_a",
+        "fixture_a"
+      ],
+      "missing_objects": [],
+      "start_sec": 36.0,
+      "end_sec": 43.0,
+      "duration_sec": 7.0,
+      "match_score": 0.91,
+      "hit_windows": 7,
+      "evidence_frames": [
+        1894,
+        1912,
+        1940
+      ],
+      "evidence_timestamps_sec": [
+        36.2,
+        38.0,
+        41.5
+      ],
+      "summary_metrics": {
+        "motion_norm": 0.41,
+        "center_focus": 0.84
+      },
+      "media_object_ids": [
+        "media_clip_cycle1_align_part_a"
+      ],
+      "notes": "Fixed-window supervision completed with strong center alignment evidence.",
+      "observed_at": "2026-03-27T09:31:10Z"
+    }
+  ]
+}

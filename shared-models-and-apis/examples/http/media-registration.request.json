@@ -1,0 +1,21 @@
+{
+  "items": [
+    {
+      "kind": "video",
+      "purpose": "replay_clip",
+      "content_type": "video/mp4",
+      "filename": "placement_failure.mp4",
+      "byte_size": 1843200,
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb924",
+      "start_offset_sec": 84.5,
+      "end_offset_sec": 88.8
+    },
+    {
+      "kind": "image",
+      "purpose": "evidence",
+      "content_type": "image/jpeg",
+      "filename": "placement_failure_frame.jpg",
+      "byte_size": 245760
+    }
+  ]
+}

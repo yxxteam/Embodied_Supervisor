@@ -127,6 +127,7 @@ shared-models-and-apis/examples/http/
 - 仓库与目录说明：[docs/仓库与目录说明.md](docs/仓库与目录说明.md)
 - 原始规划说明：[docs/仓库规划说明.md](docs/仓库规划说明.md)
 - GitHub 协作说明：[docs/GitHub上传与协作指南.md](docs/GitHub上传与协作指南.md)
+- 机械臂参数包改动说明：[docs/机械臂返还参数包与参数接口改动说明.md](docs/机械臂返还参数包与参数接口改动说明.md)
 - 队员 A 使用说明源码：[docs/teammate_a_frontend_edge_guide.tex](docs/teammate_a_frontend_edge_guide.tex)
 - 队员 A 使用说明 PDF：[docs/teammate_a_frontend_edge_guide.pdf](docs/teammate_a_frontend_edge_guide.pdf)
 - 队员 B 使用说明源码：[docs/teammate_b_backend_data_guide.tex](docs/teammate_b_backend_data_guide.tex)
@@ -140,10 +141,10 @@ shared-models-and-apis/examples/http/
 - 五个技术边界子目录建立。
 - 根 README、目录说明和架构图文档完善。
 - 子仓内部第一层模块骨架目录落地。
+- `shared-models-and-apis` 首批 OpenAPI / Schema / Proto / 示例文件落地。
 
 目前尚未完成：
 
-- `shared-models-and-apis` 的首批真实 OpenAPI / Schema 文件。
 - 边缘监督、云端控制面、工作站页面的真实实现代码。
 - 自动化 CI/CD、测试基线和跨仓版本联动脚本。
 
